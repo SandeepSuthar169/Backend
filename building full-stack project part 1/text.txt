@@ -1,0 +1,19 @@
+require  ->   "type": "common js",
+import   ->  "type": "module",
+.env
+
+------------------------------------------------
+npm init
+
+npm i nodemon
+npm i -D  nodemon
+npm run start
+npm i dotenv
+npm i cors
+npm i mongoose
+
+
+
+-- Error ----------------------------------------
+/ (slish) 
+CORS Error -->> IMP
