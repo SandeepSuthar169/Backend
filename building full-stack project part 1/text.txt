@@ -1,8 +1,9 @@
+1. -------------------------------------------
 require  ->   "type": "common js",
 import   ->  "type": "module",
 .env
 
-------------------------------------------------
+2. ------------------------------------------------
 npm init
 
 npm i nodemon
@@ -14,6 +15,14 @@ npm i mongoose
 
 
 
--- Error ----------------------------------------
-/ (slish) 
-CORS Error -->> IMP
+3. -- Error ----------------------------------------
+3.1 / (slish) ==>> app.get('/', (req, res) => {
+                    res.send('Hello everyOn')
+                })
+3.2 CORS Error -->> IMP
+3.3 mongodb password -- VV IMP
+3.4 Error in  import db from "./utils/db";  or    /db.js
+
+4. -- DataBase ------------------------------------
+` ip_whitelisting
+` username-password
