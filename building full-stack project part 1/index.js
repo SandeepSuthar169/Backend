@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import db from "./utils/db.js";
 
+// import all routes
+import userRouters from "./routes/user.routes.js"
 
 
 dotenv.config();
@@ -36,6 +38,10 @@ app.get('/Sandeep', (req, res) => {
 // console.log(process.env.PORT);
 //connenct to db
 db();
+
+//user routes
+app.use("/api/v1/users/", userRouters)
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
