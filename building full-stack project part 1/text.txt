@@ -5,6 +5,7 @@ import   ->  "type": "module",
 
 2. ------------------------------------------------
 npm init
+npm install express
 
 npm i nodemon
 npm i -D  nodemon
