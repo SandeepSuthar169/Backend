@@ -9,7 +9,7 @@ npm install express
 
 npm i nodemon
 npm i -D  nodemon
-npm run start
+npm run dev
 npm i dotenv
 npm i cors
 npm i mongoose
@@ -27,3 +27,6 @@ npm i mongoose
 4. -- DataBase ------------------------------------
 ` ip_whitelisting
 ` username-password
+
+
+-`-` Where to get the data in postMan and webside ->>> url(get, post...), Body, Cookies      -IMP
