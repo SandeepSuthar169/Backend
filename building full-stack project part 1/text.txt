@@ -7,7 +7,6 @@ import   ->  "type": "module",
 npm init
 npm install express
 
-
 npm i nodemon
 npm i -D  nodemon
 npm run start
