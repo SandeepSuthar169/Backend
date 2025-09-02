@@ -83,6 +83,30 @@ const registerUser = async (req, res) => {
     
 };
     
-const verifyUser = async
+const verifyUser = async (req, res) => {
+    //get token from url 
+    // validate
+    // find uesr based on token
+    // if not
+    // set isvarified fiead true
+    //remove rerifivatoin token 
+    // save
+    // return response
 
-export { registerUser }
+    const { token } = req.params
+    console.log(token);
+    if (!token ){
+        return res.status(400).json({
+            message:" Invalid token"
+        })
+    }
+    const user = await User.findOne({varificationToken: token})
+    
+    if (!user ){
+        return res.status(400).json({
+            message:" Invalid User"
+        })
+    }
+};
+
+export { registerUser, verifyUser }
