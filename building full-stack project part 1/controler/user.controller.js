@@ -48,23 +48,41 @@ const registerUser = async (req, res) => {
 
         // send email
         const transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
+            host: "process.env.MAILTRAP_HOST",
+            port: "process.env.MAILTRAP_PORT",
             secure: false, // true for 465, false for other ports
             auth: {
-                user: "maddison53@ethereal.email",
-                pass: "jn7jnAPss4f63QBp6D",
+                user: "process.env.MAILTRAP_USERNAME",
+                pass: "process.env.MAILTRAP_PASSWORD",
             },
         });
         
-        
+        const mailOption = {
+                from: '"process.env.MAILTRAP_SENDEREMAIL',
+                to: "user.email",
+                subject: "verify your email",
+                text: `Plase click on the following link: 
+                ${process.env.BASE_URL}/api/v1/users/verify/${token}
+                `,
+        }
+
+        await transporter.sendMail(mailOption)
+
+        res.status(201).json({
+            message: "User register successfully",
+            success: true
+        }) 
         
     } catch (error) {
-        
+        res.status(400).json({
+            message: "User not registered ",
+            error,
+            success: false
+        }) 
     }
     
 };
     
-
+const verifyUser = async
 
 export { registerUser }
