@@ -107,6 +107,9 @@ const verifyUser = async (req, res) => {
             message:" Invalid User"
         })
     }
+    user.isVerified  = true
+    user.varificationToken = undefined // undefined ? null ? , string value ? other .....
+    await user.save()
 };
 
 export { registerUser, verifyUser }

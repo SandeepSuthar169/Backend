@@ -15,6 +15,7 @@ npm i cors
 npm i mongoose
 
 npm install nodemailer
+npm install bcryptjs
 
 
 
