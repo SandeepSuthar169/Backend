@@ -28,16 +28,16 @@ const userSchema = new mongoose.Schema({
 }, 
 {
     timestamps:true
-})
+});
 
 //huck 
 userSchema.pre("save", async function (next) {
     if(this.isModified("paassword")){
         this.paassword = bcrypt.hash(this.paassword, 10)
     }
-    next()
-})
+    next();
+});
 
-const User =  mongoose.model("User", userSchema)
+const User =  mongoose.model("User", userSchema);
 
-export default User 
+export default User ;

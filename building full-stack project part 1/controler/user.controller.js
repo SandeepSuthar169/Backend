@@ -1,6 +1,7 @@
 import User from "../model/User.model.js";
 import crypto from "crypto"
 import nodemailer from "nodemailer"
+// import JsonWebTokenError  from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
     // get data
@@ -112,4 +113,65 @@ const verifyUser = async (req, res) => {
     await user.save()
 };
 
-export { registerUser, verifyUser }
+const login = async (req, res) => {
+    const {email, paassword} = req.body
+
+    if(!email || !paassword){
+        return res.status(400).json({
+            message: "All fields are required"
+        });
+    };
+
+    try {
+        const user = await User.findOne({email})     // email:email 
+        if (!user ){
+            return res.status(400).json({
+                message:" Invalid email or password"
+            });
+        };   
+
+        const isMatch = await bcrypt.compare(paassword, user.paassword)
+        
+        console.log(isMatch);
+        
+        if (!isMatch ){
+            return res.status(400).json({
+                message:" Invalid email or password"
+            })
+        }   
+
+
+        //user.isvarifid status code(200)
+        
+        jwt.sign(
+            {id: user._id, role: user.role},
+
+            "shhhhh", 
+            {
+                expiresIn: "24h"
+            }
+        );
+        const cookieOption = {
+            httpOnly: true,
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000
+        }
+        res.cookie("token", token, {cookieOption})
+
+        res.status(200).json({
+            success:true,
+            message: "Login seccessful",
+            token,
+            user: {
+                id: user_id,
+                mane: user.name,
+                role: user.role,
+            },
+        });
+    } catch (error) {}
+
+
+};
+
+
+export { registerUser, verifyUser, login }

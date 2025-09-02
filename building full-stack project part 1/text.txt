@@ -16,7 +16,8 @@ npm i mongoose
 
 npm install nodemailer
 npm install bcryptjs
-
+npm install jsonwebtoken
+npm install cookie-parser
 
 
 3. -- Error ----------------------------------------
