@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
 //huck 
 userSchema.pre("save", async function (next) {
     if(this.isModified("paassword")){
-        this.paassword = bcrypt.hash(this.paassword, 10)
+        this.paassword = await bcrypt.hash(this.paassword, 10)
     }
     next();
 });
