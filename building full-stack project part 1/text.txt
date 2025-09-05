@@ -13,6 +13,7 @@ npm run dev
 npm i dotenv
 npm i cors
 npm i mongoose
+npm install crypto-js
 
 npm install nodemailer
 npm install bcryptjs
