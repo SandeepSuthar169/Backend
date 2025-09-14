@@ -17,7 +17,7 @@ import   ->  "type": "module",
 npm init
 npm install express
 
-npm i nodemon
+npm i nodemon :- restart, monitor of Node.
 npm i -D  nodemon
 npm run dev
 npm i dotenv
@@ -46,11 +46,9 @@ npm install cookie-parser
                 })
 
 3.2 CORS Error -->> IMP
-3.3 mongodb password -- VV IMP
+3.3 mongodb password -- V.V IMP
 3.4 Error in  import db from "./utils/db";  or    /db.js
-
-
-
+3.5 import statement in index.js after that update package.json "type": "module". 
 
 
 
