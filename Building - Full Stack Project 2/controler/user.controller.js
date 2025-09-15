@@ -1,6 +1,8 @@
 import User from "../model/User.model.js";
 import crypto from "crypto"
 import nodemailer from "nodemailer"
+import jwt from "jsonwebtoken"
+
 // import JsonWebTokenError  from "jsonwebtoken";
 
 const registerUser = async (req, res) => {

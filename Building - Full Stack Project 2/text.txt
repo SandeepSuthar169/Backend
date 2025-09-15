@@ -3,6 +3,16 @@ require  ->   "type": "common js",
 import   ->  "type": "module",
 .env
 
+
+
+
+
+
+
+
+
+
+
 2. ------------------------------------------------
 npm init
 npm install express
@@ -21,17 +31,45 @@ npm install jsonwebtoken
 npm install cookie-parser
 
 
-3. -- Error ----------------------------------------
+
+
+
+
+
+
+
+
+
+3. -_- Error ----------------------------------------
 3.1 / (slish) ==>> app.get('/', (req, res) => {
                     res.send('Hello everyOn')
                 })
+
 3.2 CORS Error -->> IMP
 3.3 mongodb password -- VV IMP
 3.4 Error in  import db from "./utils/db";  or    /db.js
 
-4. -- DataBase ------------------------------------
+
+
+
+
+
+
+4. --- DataBase ------------------------------------
 ` ip_whitelisting
 ` username-password
-
-
 -`-` Where to get the data in postMan and webside ->>> url(get, post...), Body, Cookies      -IMP
+
+
+
+
+
+
+
+
+
+
+
+5. --- Behind the Seen --------------------------------------
+5.1 JavaScript engine => Node, Bun, Deno etc...
+5.2 Semantic Versioning
