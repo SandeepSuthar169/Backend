@@ -30,6 +30,8 @@ npm install bcryptjs
 npm install jsonwebtoken
 npm install cookie-parser
 
+            +++ --------------------------- +++
+Zod, 
 
 
 
@@ -49,7 +51,7 @@ npm install cookie-parser
 3.3 mongodb password -- V.V IMP
 3.4 Error in  import db from "./utils/db";  or    /db.js
 3.5 import statement in index.js after that update package.json "type": "module". 
-
+3.6 DataBase is always created in aother folder:->(utils/user.routes.js)
 
 
 
