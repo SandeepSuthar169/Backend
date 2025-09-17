@@ -1,43 +1,33 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
-
 
 
 const userSchema = new mongoose.Schema({
     name: String,
     email: String,
-    paassword: String,
+    password: String,
     role:{
         type: String,
-        enum:['user', 'admin'],
+        enum: ["user", "admin"],
         default: "user"
     },
     isVerified:{
         type:Boolean,
-        default: false
+        default: false,
     },
-    varificationToken:{
-        type: String
+    verificationToken: {
+        type: String,
     },
-    resetPasswordToken:{
-        type: String
+    resetPasswordToken: {
+        type: String,
     },
-    resetPasswordExprires:{
+    resetPasswordExpires: {
         type: Date,
     }
-}, 
-{
-    timestamps:true
-});
+},
+    {
+        timestamps: true
+})
 
-//huck 
-userSchema.pre("save", async function (next) {
-    if(this.isModified("paassword")){
-        this.paassword = await bcrypt.hash(this.paassword, 10)
-    }
-    next();
-});
+const User = mongoose.model("User", userSchema)
 
-const User =  mongoose.model("User", userSchema);
-
-export default User ;
+export default User

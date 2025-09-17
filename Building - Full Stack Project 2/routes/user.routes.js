@@ -1,14 +1,9 @@
-import express from 'express'
-import { registerUser } from '../controler/user.controller.js'
-import { verifyUser}  from '../controler/user.controller.js'
-import { login } from '../controler/user.controller.js'
-
+import express from "express"
+import { registerUser } from "../controller/user.controller.js"
 
 const router = express.Router()
 
-router.post("/register", registerUser)
-router.get("/verify/:token", verifyUser)
-router.post("/login", login)
+router.get("/register", registerUser)
 
 
-export default router;
+export default router
