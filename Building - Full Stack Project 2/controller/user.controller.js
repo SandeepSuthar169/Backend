@@ -1,6 +1,7 @@
 import User from "../model/User.model.js"
 import crypto from "crypto"
 import nodemailer from "nodemailer"
+import bcrypt from "bcryptjs";
 
 const registerUser = async (req, res) => {
     // console.log(res);
@@ -64,20 +65,19 @@ const registerUser = async (req, res) => {
         
         const mailOption = {
             from: process.env.MAILTRAP_SENDEREMAIL,
-            to: User.email,
+            to: user.email,
             subject: "Verify your email",
-            text: `please click on the following lnk:
-            ${process.env.BASE_URL}/api/v1/users/verify/${token}`
+            text: `please click on the following link:
+            ${process.env.BASE_URL}/api/v1/users/verify/${token}`,
         };
 
-        await transporter.sendMail(mailOption)
+        await transporter.sendMail(mailOption);
 
 
         res.status(201).json({
             message: "User registered successfully",
             success: true
-        })
-
+        });
 
 
     } catch (error) {
@@ -85,11 +85,40 @@ const registerUser = async (req, res) => {
             message: "User not registered ",
             error,
             success: false
-        })
-
+        });
     }
-    
-
 };
 
-export { registerUser }
+
+const verifyUser = async (req, res) => {
+    //get token from url
+    //validate
+    //find user based on token
+    //if not
+    //set isVerufied field to true 
+    //remove verification tokn
+    //save
+    //return response
+
+    const { token } = req.params;
+    console.log(token);
+    if(!token){
+        return res.status(400).json({
+            message: "Invalid token",
+        })
+    }
+    const user = await User.findOne({ verificationToken: token })
+   
+    if(!user){
+        return res.status(400).json({
+            message: "Invalid Token"
+        })
+    }
+
+    user.isVerified = true
+    user.verificationToken = undefined
+
+    await user.save();
+}
+
+export { registerUser, verifyUser }
