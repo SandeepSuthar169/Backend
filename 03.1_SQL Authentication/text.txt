@@ -1,0 +1,24 @@
+npm init -y
+npm i -D nodemon
+npm install  express cors cookie-parser dotenv jsonwebtoken nodemailer
+
+npx prisma init
+npx prisma 
+npx prisma format
+npx prisma migrate dev --name init
+npm i prisma @prisma/client
+
+
+npx prisma migrate { option }
+
+
+
+
+
+
+
+//------------ comands -------------------------
+prisma migrate reset                                -> Reset your database and apply all migrations
+prisma migrate status                               -> Apply pending migrations to the database in production/staging 
+prisma migrate status                               -> Check the status of migrations in the production/staging database
+prisma migrate status  --schema=./schema.prisma     -> Specify a schema
