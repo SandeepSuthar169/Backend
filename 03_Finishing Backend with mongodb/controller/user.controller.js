@@ -90,7 +90,7 @@ const registerUser = async (req, res) => {
         });
     }
 };
-
+//------------------------------------------------------
 const verifyUser = async (req, res) => {
     //get token from url
     //validate
@@ -126,7 +126,7 @@ const verifyUser = async (req, res) => {
         success: true
       })
 }
-
+//------------------------------------------------------
 const login = async (req, res) => {
     const {email, password} = req.body
 
@@ -181,7 +181,7 @@ const login = async (req, res) => {
         
     }
 }
-
+//------------------------------------------------------
 const getMe = async (req, res) => {
     try {
         const user =  await User.findById(req.user.id).select('-password')
@@ -202,7 +202,7 @@ const getMe = async (req, res) => {
         
     }
 }
-
+//------------------------------------------------------
 const logoutUser = async (req, res) => {
     try {
         res.cookie("token", "", {} )
@@ -215,7 +215,7 @@ const logoutUser = async (req, res) => {
     }
 }
 
-
+//------------------------------------------------------
 const forgotPassword = async (req, res) => {
     try {
         
@@ -223,7 +223,7 @@ const forgotPassword = async (req, res) => {
         
     }
 }
-
+//------------------------------------------------------
 const resetPassword = async (req, res) => {
     try {
         
@@ -232,7 +232,7 @@ const resetPassword = async (req, res) => {
     }
 }
 
-
+//------------------------------------------------------
 export { 
     registerUser, 
     verifyUser, 
