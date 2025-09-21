@@ -193,23 +193,24 @@ const getMe = async (req, res) => {
                 message: "User not found"
             })
         }
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             user
         })
  
     } catch (error) {
+        console.log("Error is get me", error);
         
     }
 }
 //------------------------------------------------------
 const logoutUser = async (req, res) => {
     try {
-        res.cookie("token", "", {} )
-        res.status(200).json({
-            success: true,
-            message: "Logged out successfully"
-        })
+        // res.cookie("token", "", {} )
+        // res.status(200).json({
+        //     //success: true,
+        //     //message: "Logged out successfully"
+        // })
     } catch (error) {
         
     }
@@ -218,7 +219,10 @@ const logoutUser = async (req, res) => {
 //------------------------------------------------------
 const forgotPassword = async (req, res) => {
     try {
-        
+        // get email
+        // find user based on email
+        //reset token + reset expiry  => Date.now() + 10 * 60 * 1000 
+        //send mail => design url
     } catch (error) {
         
     }
@@ -226,7 +230,26 @@ const forgotPassword = async (req, res) => {
 //------------------------------------------------------
 const resetPassword = async (req, res) => {
     try {
-        
+        // //collect token from params
+        // //password from req.body
+        // const { token } = req.params
+        // const { password, confPassword } = req.body
+
+        // if(password === confPassword){
+
+        // }
+        // try {
+        //     //await User.findOne({
+        //      //   resetPasswordToken: token,
+        //        // resetPasswordExpires: {$gt: Date.now()}
+
+        //   //  })
+        //     // set password in user
+        //     //resetToken, resetExpriry => rest ->  emty
+        //     //save
+        // //} catch (error) {
+            
+        //}
     } catch (error) {
         
     }
