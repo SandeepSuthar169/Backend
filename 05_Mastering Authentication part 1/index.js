@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
 import db from './utils/db.js'
+import userRoutes from "./routes/user.routes.js"
 
 dotenv.config()
 
@@ -22,6 +23,9 @@ app.use(cors({
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+
+
+app.use("/api/v1/users", userRoutes)
 
 db()
 
