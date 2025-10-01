@@ -1,0 +1,8 @@
+1. What is Backend and Frontend. 
+2. what is npm and npx.
+3. What is type: (commonjs or moduljs) in during npm initialize. 
+4. what is route (GET, POST, DELETE, OPTION)
+5. Why use urlencoded({extended: true}) in express. 
+6. What is CORS and Whay is it in when creating the Backend.
+7. Why use nodemon, npm i -D nodemon
+8. What is mongoDB and mongoose. 
