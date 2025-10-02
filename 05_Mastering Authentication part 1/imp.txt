@@ -6,3 +6,23 @@
 6. What is CORS and Whay is it in when creating the Backend.
 7. Why use nodemon, npm i -D nodemon
 8. What is mongoDB and mongoose. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"

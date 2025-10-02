@@ -40,4 +40,4 @@ const sendVerificationEmail = async (email, token) => {
   }
 };
 
-export { sendVerificationEmail };
+export default sendVerificationEmail

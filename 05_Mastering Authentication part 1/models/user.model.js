@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs"
+
+
+
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        require: true,
+        required: true,
         trim: true
     },
     email: {
@@ -12,9 +16,9 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         require: true
     },
-    passwore: {
+    password: {
         type: String,
-        require: true,
+        required: true,
         minlength: 6
     },
     isVerified: {
@@ -29,16 +33,30 @@ const userSchema = new mongoose.Schema({
     verificationToken: String,
     verificationTokenExprixy: Date,
 
-
-
-
-
 },  {
     timestamps: true
     }
 );
 
-const User = mongoose.model('user', userSchema);
+
+
+userSchema.pre("save", async function(next){
+    if(!this.isModified("password")){
+        next()
+    }else {
+        this.password = await bcrypt.hash(this.password, 10)
+        next()
+    }
+})
+
+
+userSchema.methods.comparePassword = async function (password){
+    return await bcrypt.compare(password, this.password)
+}
+
+
+
+const User = mongoose.model('User', userSchema);
 
 export default User;
 

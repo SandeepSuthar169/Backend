@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import db from './utils/db.js'
 import userRoutes from "./routes/user.routes.js"
+import cookieparser from "cookie-parser"
 
 dotenv.config()
 
@@ -17,6 +18,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-type', 'Authorization'] 
 }))
+app.use(cookieparser())
 
 
 
