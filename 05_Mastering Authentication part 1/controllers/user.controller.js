@@ -167,19 +167,35 @@ const login = async (req, res) => {
             })
         }
 
-        const JwtToken = jwt.sign(
-            {   id: user._id    },
-            process.env.JWT_SECRET,
-            {   expiresIn: "1h"    }
-        );
+        // const JwtToken = jwt.sign(
+        //     {   id: user._id    },
+        //     process.env.JWT_SECRET,
+        //     {expiresIn: process.env.JWT_EXPIRY}    
+        // );
 
+        const accessToken = jwt.sign(
+            {   id: user._id   }, 
+            process.env.ACCESSTOKEN_SECRET,
+            {   expiresIn: process.env.ACCESSTOKEN_EXPIRY   }
+        )
+     
+        const refreshToken = jwt.sign(
+            {   id: user._id   }, 
+            process.env.REFRESHTOKEN_SECRET,
+            {   expiresIn: process.env.REFRESHTOKEN_EXPIRY   }
+        )
+
+        user.refreshToken = refreshToken
+        await  user.save();
         const cookieOptons = {
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            //// expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
             httpOnly: true,
-            secure: true
+            // //secure: true
         }
 
-        res.cookie("JwtToken", JwtToken, cookieOptons)
+        ////res.cookie("JwtToken", refreshToken, cookieOptons)
+        res.cookie("accessToken", accessToken, cookieOptons)
+        res.cookie("refreshToken", refreshToken, cookieOptons)
 
         return res.status(200).json({
             message: "login successfuly",
@@ -191,10 +207,35 @@ const login = async (req, res) => {
 
     } catch (error) {
         return res.status(500).json({
-            message: "Intervel server error in login "
+            message: "Intervel server error in login ",
+            success: false
         }) 
     }
+}
+
+
+const getProfile = async ( req, res ) => {
+    //1. get user id from request boject
+    const userId = req.user.id
+    console.log("1");
+    
+    //2 find user id 
+    const user = await User.findOne(userId).select("-password")
+    console.log("2");
+
+
+    if(!user) {
+       return res.status(400).json({
+        message: "password is not correct",
+        success: false
+       });
     }
+    console.log("3");
 
+    return res.status(200).json({
+        message: "user profile access",
+        success: true
+    })
+}
 
-export {register, verify, login}
+export {register, verify, login, getProfile}
