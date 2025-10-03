@@ -6,7 +6,7 @@
 6. What is CORS and Whay is it in when creating the Backend.
 7. Why use nodemon, npm i -D nodemon
 8. What is mongoDB and mongoose. 
-
+9. Long-lived Refresh Token vs shirt lived refresh token. 
 
 
 
