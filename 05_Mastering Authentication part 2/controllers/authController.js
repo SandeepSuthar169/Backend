@@ -56,24 +56,107 @@ const googleLogin = (req, res) => {
     const state = generateState()
     const nonce = generateNonce();
 
-    res.cookies('oath_state', state, {
+    res.cookie('oath_state', state, {
         httpOnly: true,
-        maxAge: 1000 * 60,
+        maxAge: 1000 * 600,
     });
 
-    res.cookies("oauth", nonce, {
+    res.cookie("oauth", nonce, {
         httpOnly: true,
-        maxAge: 1000 * 60
+        maxAge: 1000 * 600
     });
 
-    const googleAuthUrl = `http://accounts.google.com/0/oauth2/v2/auth?client_id=${process.env.CLIENT_ID}&redirect_url=${process.env.GOOGLE_REDIRECT_URL}&response_type=code&scope=email%20profile%20openid&state=${state}&nonce=${nonce}`
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URL}&response_type=code&scope=openid%20email%20profile&state=${state}&nonce=${nonce}`;
     
     res.redirect(googleAuthUrl)
 };
 
 
 // 2. Handle Google Callback and Exchange Code for Tokens
-const googleCallback = async (req, res) => {};
+const googleCallback = async (req, res) => {
+    try {
+        const { code, state } = req.body
+        const savedState = req.cookies.oauth_state;
+        const savedNonce = req.cookies.oauth_nonce;
+
+        res.clearCookie("oauth_state");
+        res.clearCookie("oauth_nonce");
+
+        if(!state || !savedState || state !== savedState){
+            return res.status(401).json({
+                message: "Invalid state"
+            })
+        }
+
+        //exchange code for goole tokens
+        const tokenResponse = await axios.post(
+            "https://oauth2.googleapis.com/token",
+            null,
+            {
+                params: {
+                    client_id: process.env.CLIENT_ID,
+                    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                    redirect_uri: process.env.GOOGLE_REDIRECT_URL,
+                    code,
+                    grant_type: "authorization_code"
+                },
+            }
+        )
+
+        const { id_token, refresh_token } = tokenResponse.data;
+        if(!id_token){
+            return res.status(401).json({
+                message: "Invalid id token"
+            })
+        }
+
+        // verify id token
+    const decodedToken = await verifyGoogleToken(id_token);
+
+    // check if nonce matches the one stored in cookie
+    if(!decodedToken.nonce || decodedToken.nonce !== savedNonce) {
+         return res.status(401).json({ message: "invalid nonce parametr" })
+    }
+
+    //find or create the user in the db
+    let user = await User.findOne({ googleId: decodedToken.sub })
+    if (!user) {
+        user = await User.create({
+            googleId: decodedToken.sub,
+            email: decodedToken.email,
+            name: decodedToken.name,
+            refreshToken: refresh_token || null
+        })
+    } else if (refresh_token) {
+        //update refresh token if it is changes
+        user.refreshToken = refresh_token;
+        await user.save()
+    }
+    // Generate own JWT  token for user
+    const accessToken = jwt.sign({
+        userID: user._id, email: user.email
+    }, process.env.JWT_SECRET,
+    {
+        expiresIn: "1h"
+    })
+
+    res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        maxAge: 3600000
+    })
+
+    res.status(200).json({
+        message: "Lonin Successfull",
+        user: {
+            id: user._id,
+            email: user.email,
+            name: user.name
+        }
+    })
+    } catch (error) {
+        return res.status(400).json({ message: "Authentication failed" })
+    }
+};
 
 // 3. get User Profile
 const getProfile = async (req, res) => {};
