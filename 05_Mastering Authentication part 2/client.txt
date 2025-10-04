@@ -1,0 +1,39 @@
+{
+    "web":{
+        "client_id":"XXXXxxxxx-1do3ha46jhb5pd1i12rht3v62qhro5hj.apps.googleusercontent.com",
+        "project_id":"amazing-math-474104-a1",
+        "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+        "token_uri":"https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret":"xxxxx-X2snzbtKO-emC5cEXEYEg9vH3YdX"
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+1. GOOGLE_CLIENT_ID
+
+- This is a unique identifier for your OAuth application.How to get it:
+
+- Go to the Google Cloud Console.
+- Create a new project (or select an existing one) via the project dropdown at the top.
+- Navigate to APIs & Services > Credentials.
+- Click + Create Credentials > OAuth client ID.
+- Select Web application as the application type.
+- Enter a name for your client (e.g., "My App OAuth").
+- Under Authorized redirect URIs, add your redirect URI (see below for details).
+- Click Create. The client ID will be displayed (format: your-client-id.googleusercontent.com).
+- Copy it directly or download the JSON file, which contains the key "client_id".
+
+
+2. GOOGLE_REDIRECT_URI: ->  https://yourapp.com/callback .
+
+3. GOOGLE_JWKS_URL :-> It's a fixed, public URL provided by Google for all OAuth 2.0/OpenID Connect implementations: -> https://www.googleapis.com/oauth2/v3/certs.
