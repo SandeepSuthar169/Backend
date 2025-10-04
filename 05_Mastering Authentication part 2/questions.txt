@@ -1,0 +1,41 @@
+1. what is OpenID.
+2. OAuth vs OpenID vs OAuth2.0. 
+3. Long-lived Refresh Token vs shirt lived refresh token.
+4. OpenID Connect (client) [ OIDC ]. 
+5. what is scope = OpenID and response_type = code. 
+6. what is cookies.  
+7. jwks_uri (JSON WEB KEY SET).
+8. what is Public key, Private key
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------
+OAuth -> Authorization (permission)
+OPENID -> Authentication
+
+OAuth2.0
