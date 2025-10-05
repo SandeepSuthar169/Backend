@@ -145,7 +145,7 @@ const googleCallback = async (req, res) => {
         maxAge: 3600000
     })
 
-    res.status(200).json({
+    res.status(201).json({
         message: "Lonin Successfull",
         user: {
             id: user._id,

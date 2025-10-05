@@ -2,6 +2,8 @@ import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
 import db from "./config/db.js"
+import authRoutes from "./routes/authRoutes.js"
+
 
 
 
@@ -16,6 +18,7 @@ app.use(cors({
     origin:  process.env.BASE_URL, 
     Credentials: true
 }))
+app.use("/auth", authRoutes)
 
 
 app.get('/', (req, res) => {
