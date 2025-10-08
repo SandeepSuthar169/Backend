@@ -1,0 +1,6 @@
+1. what is thread
+2. is node single thread or multi thread?.   
+
+
+
+
