@@ -7,7 +7,7 @@ const projectNoteSchema = new Schema(
             ref: "Project",
             required: true
         },
-        createBy: {
+        createdBy: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
@@ -20,6 +20,5 @@ const projectNoteSchema = new Schema(
     {timestamps: true}
 )
 
-export const ProjectNote = mongoose.model("ProjectNOte",  projectNoteSchema);
-
+export const ProjectNote = mongoose.model("ProjectNote", projectNoteSchema);
  

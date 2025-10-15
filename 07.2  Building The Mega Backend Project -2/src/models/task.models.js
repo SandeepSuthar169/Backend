@@ -7,9 +7,9 @@ const taskSchema = new Schema(
             type: String,
             required: true
         },
-        decription: {
+        description: {
             type: String
-        },
+        },        
         project: {
             type: Schema.Types.ObjectId,
             ref: "Project",
