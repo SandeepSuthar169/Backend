@@ -92,3 +92,65 @@
 ]
 
 //---------------------------------------------
+// List all unique eye colors present in the collection.
+[
+  {
+    $group: {
+      _id: "$eyeColor",
+    }
+  }
+]
+
+//---------------------------------------------
+// What is the average number of tags per user? 
+[
+  {
+    $unwind: {
+      path: "$tags",
+   
+    }
+  },
+  {
+    $group: {
+      _id: "_id",
+      numberOfTages: {
+        $sum: 1
+      }
+
+    }
+  },
+  {
+    $group: {
+      _id:  null,
+      averageNumberOfTages: {
+        $avg: "$numberOfTages"
+      }
+    }
+  }
+]
+
+
+//                    or 
+
+
+[
+  {
+    $addFields: {
+      numberOfTages: {
+        $size: {
+          $ifNull: ["$tags", []]
+        }
+      } 
+    }
+  },
+{
+  $group: {
+    _id: null,
+    averageNumberOfTages: {
+      $avg: "$numberOfTages"
+    }
+  }
+}
+]
+//---------------------------------------------
+// How many users have "enim" as one of their tags?
