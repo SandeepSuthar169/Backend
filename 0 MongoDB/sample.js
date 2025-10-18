@@ -152,5 +152,66 @@
   }
 }
 ]
+
+
 //---------------------------------------------
 // How many users have "enim" as one of their tags?
+[
+  {
+    $match: {
+      tags: "enim"
+    }
+  },
+  {
+    $count: 'userWithEnimTag'
+  }
+]
+
+//Whai are the names and age if users who are inactive and have "velit" as a tag? 
+[
+  {
+    $match: {
+      isActive: false,
+      tags: "velit",
+    },
+  },
+  {
+    $project: {
+      name: 1,
+      age: 1
+    }
+  }
+]
+
+// How many users hava a phone number starting with '+1 (940)'?
+[
+  {
+    $match: {
+      "company.phone": /^\+1 \(940\)/
+    }
+  },
+  {
+    $count: "userWithSpacialPhoneNumber"
+  }
+]
+
+// Who has registered the most recently? 
+[
+  {
+    $sort: {
+      registerd: -1
+    }
+  },
+  {
+    $limit: 4
+  },
+  {
+    $project: {
+      name: 1,
+      registered:1,
+      favorite_Fruit: 1
+    }
+  }
+]
+//Categorize users by their favorite fruit. 
+
