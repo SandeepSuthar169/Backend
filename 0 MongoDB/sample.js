@@ -213,5 +213,57 @@
     }
   }
 ]
-//Categorize users by their favorite fruit. 
 
+
+//Categorize users by their favorite fruit. 
+[
+  {
+    $group: {
+      _id: "$favorite_Fruit",
+			users: {
+        $push: "$name"
+      }
+    }
+  }
+]
+
+// How many users have 'ad' as the second tag in their list of tags? 
+[
+  {
+    $match: {
+      "tags.1": "ad"
+    }
+  },
+  {
+    $count: 'secoundTagAd'
+  }
+]
+
+// Find users who have both 'enim' and 'id' as their tags. 
+
+[
+  {
+    $match: {
+        tags: {
+          $all: ['enim', 'id']
+        }
+    }
+  }
+]
+
+// List all companies located in the USA with their corresponding user count. 
+[
+  {
+    $match: {
+      "company.location.country": "USA"
+    }
+  },
+  {
+    $group: {
+      _id: "company.title",
+      companyCount: {
+        $sum: 1
+      }
+    }
+  }
+]
