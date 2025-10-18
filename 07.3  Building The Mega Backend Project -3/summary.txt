@@ -6,7 +6,8 @@ cd src
 mkdir controllers db middlewares models routes utils validators  
 create files in Git Bash : -> touch note.models.js project.models.js projectmember.js subtask.models.js task.models.js user.models.js
 
-
+npm i mailgen
+npm i nodemailer
 
 
 
