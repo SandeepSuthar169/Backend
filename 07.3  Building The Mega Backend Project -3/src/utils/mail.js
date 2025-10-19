@@ -14,8 +14,8 @@ const sendMail = async (options) => {
         }
     })
 
-    var emailText = mailGenerator.generatePlaintext(options.mailGenContent);
-    var emailHTML = mailGenerator.generate(options.mailGenContent);
+    let emailText = mailGenerator.generatePlaintext(options.mailGenContent);
+    let emailHTML = mailGenerator.generate(options.mailGenContent);
 
     const transporter = nodemailer.createTransport({
         host: process.env.MAILTRAP_SMTP_HOST,
@@ -81,12 +81,5 @@ const forgotPasswordMailGenContent = (username, passwordResetUrl) => {
     };
 }
 
-sendMail({
-    email: user.email,
-    subjectL: "Verify your email",
-    mailGenContent: emailVerificationMailGenContent(
-        username,
-        ``
 
-    )
-})
+export { sendMail, emailVerificationMailGenContent, forgotPasswordMailGenContent }
