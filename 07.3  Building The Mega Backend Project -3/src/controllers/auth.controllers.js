@@ -17,38 +17,44 @@ const registerUser = asyncHandler(async (req, res) => {
     if(password.length < 10){
         throw new ApiError(400, "Password must be less than 10 char")
     }
+
+    //3. user already exist or not 
+    const existingUser = await User.findOne({email})
+    if(existingUser){
+        throw new ApiError(400, "User already exists");
+    }
+
+    //4. user a new create
+    const user = await User.create({
+        email,
+        password,
+        username,
+        isEmailVerified: false
+
+    })
+
+    if(!user){
+        throw new ApiError(400, "User does not exist ")
+    }
+
+
+
+    const { unHashedToken, hashedToken, tokenExpiry } = User.generateTemporyToken()
+    user.emailVerificationToken = hashedToken
+    user.emailVerificationExpiry = tokenExpiry
+
+    await user.save({ velidateBeforeSave: false})     /*   { validateBeforeSave: false }
+                            This is an option passed to the save() method. 
+                            Normally, when you save a Mongoose model, 
+                            it runs validation checks on the data before saving. 
+                            Setting validateBeforeSave: false skips those validation checks.
+                            */
+
+
     try {
-        //3. user already exist or not 
-        const existingUser = await User.findOne({email})
-        if(existingUser){
-            throw new ApiError(400, "User already exists");
-        }
-
-        //4. user a new create
-        const user = User.create({
-            email,
-            password,
-            username,
-            isEmailVerified: false
-
-        })
-
-        if(!user){
-            throw new ApiError(400, "User does not exist ")
-        }
-
-
-
-        const { unHashedToken, hashedToken, tokenExpiry } = User.generateTemporyToken()
-        user.emailVerificationToken = hashedToken
-        user.emailVerificationToken = tokenExpiry
-
-        await user.save()
-
-        
         sendMail({
             email: user.email,
-            subjectL: "Verify your email",
+            subject: "Verify your email",
             mailGenContent: emailVerificationMailGenContent(
                  user.username,
                 `${process.env.BASE_URL}/api/v1/users/verifyEmail/${unHashedToken}`
@@ -56,22 +62,26 @@ const registerUser = asyncHandler(async (req, res) => {
             )
         })
 
-        return res.status(200).json(
-            new ApiResponse(200, 
-                { 
-                    userId: user._id, 
-                    email: user.email 
-                }, 
-                "User registered successfully")
-        );
-        
 
     } catch (error) {
+        user.emailVerificationToken = undefined
+        user.emailVerificationExpiry = undefined
+        await user.save({ velidateBeforeSave: false })
         
-    }
-   
-    //5. check user not exist 
-    //6. 
+        throw new ApiError(500, "Failed to send verification email. Please try again later.");
+
+    }   
+
+
+    return res.status(201).json(
+        new ApiResponse(201, 
+            { 
+                userId: user._id, 
+                email: user.email 
+            }, 
+            "User registered successfully")
+    );
+
 
     
 });
