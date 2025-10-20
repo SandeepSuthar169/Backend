@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/async-handler.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { ApiError } from "../utils/api-error.js"
 import { sendMail, emailVerificationMailGenContent, forgotPasswordMailGenContent } from "../utils/mail.js";
-
+import crypto from "crypto"
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -39,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
 
-    const { unHashedToken, hashedToken, tokenExpiry } = User.generateTemporyToken()
+    const { unHashedToken, tokenExpiry , hashedToken} = User.generateTemporyToken()
     user.emailVerificationToken = hashedToken
     user.emailVerificationExpiry = tokenExpiry
 
@@ -67,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
         user.emailVerificationToken = undefined
         user.emailVerificationExpiry = undefined
         await user.save({ velidateBeforeSave: false })
-        
+
         throw new ApiError(500, "Failed to send verification email. Please try again later.");
 
     }   
@@ -86,6 +86,25 @@ const registerUser = asyncHandler(async (req, res) => {
     
 });
 
+const verifyEmail = asyncHandler(async (req, res) => {
+   try {
+    const verification = req.params
+
+    console.log(verification);
+
+    if(!verification){
+        throw new ApiError(400, "verification token is required")
+    }
+    
+    const hashedToken = c
+
+   } catch (error) {
+    
+   }
+    
+
+    
+});
 
 const loginUser = asyncHandler(async (req, res) => {
     const {email, username, password, role} = req.body
@@ -100,11 +119,6 @@ const logoutUser = asyncHandler(async (req, res) => {
     
 });
 
-const verifyEmail = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
-
-    
-});
 
 
 
