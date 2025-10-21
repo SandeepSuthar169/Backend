@@ -149,23 +149,61 @@ const loginUser = asyncHandler(async (req, res) => {
         if(!user.isEmailVerified){
             throw new ApiError(400, "verify your email before Login process. ")
         }
+        const PasswordValid = await user.isPasswordCorrect(password)
+
+        if(!PasswordValid){
+            throw new ApiError(400, "Password is not valid")
+        }
+
+
 
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken?.()  
 
         if(refreshToken){
             user.refreshToken = refreshToken;
-            await user.save({ velidateBeforeSave: false})
         }
+
+
+        await user.save({ velidateBeforeSave: false})
+
+        const cookiOption = {
+            httpOnly: true,
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000  // One day
+        }
+
+        res.cookie("accessToken", accessToken, cookiOption)
+
+        if(accessToken){
+            res.cookie("accessToken", accessToken, cookiOption)
+        }
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    user: {
+                        id: user._id,
+                        username: user.username,
+                        email: user.email
+                    },
+                    accessToken,
+                    refreshToken
+                },
+                "user login successfuly."
+            )
+        )
+        
 
         
 
     } catch (error) {
-        
+        throw new ApiError(500, "failed to user login.  ", error);
     }
 
     
-});
+});``
 
 
 const logoutUser = asyncHandler(async (req, res) => {
