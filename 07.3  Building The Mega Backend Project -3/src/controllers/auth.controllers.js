@@ -43,12 +43,14 @@ const registerUser = asyncHandler(async (req, res) => {
     user.emailVerificationToken = hashedToken
     user.emailVerificationExpiry = tokenExpiry
 
-    await user.save({ velidateBeforeSave: false})     /*   { validateBeforeSave: false }
-                            This is an option passed to the save() method. 
-                            Normally, when you save a Mongoose model, 
-                            it runs validation checks on the data before saving. 
-                            Setting validateBeforeSave: false skips those validation checks.
-                            */
+    await user.save({ velidateBeforeSave: false})     
+    /*   
+             { validateBeforeSave: false }
+        This is an option passed to the save() method. 
+        Normally, when you save a Mongoose model, 
+        it runs validation checks on the data before saving. 
+        Setting validateBeforeSave: false skips those validation checks.
+    */
 
 
     try {
@@ -96,10 +98,35 @@ const verifyEmail = asyncHandler(async (req, res) => {
         throw new ApiError(400, "verification token is required")
     }
     
-    const hashedToken = c
+    const hashedToken = crypto.createHash("sha256").update(verification).digest("hex")
 
-   } catch (error) {
+    const user = User.findOne({
+        emailVerificationToken: hashedToken,
+        emailVerificationExpiry: { $gt: Date.now()}
+    })
+
+    console.log(user);
+
+    if(!user){
+        throw new ApiError(400, "Invalid hahed token! ")
+    }
+
+    user.isEmailVerified =  true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+
+    await user.save({velidateBeforeSave: false})
+
+    return res.status(200).json(
+        new ApiResponse(
+          200,
+          { email: user.email },
+          "Email verified successfully."
+        
+    ))
     
+   } catch (error) {
+        throw new ApiError(500, "failed to user verification", error);
    }
     
 
@@ -107,7 +134,35 @@ const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const {email,  password } = req.body
+
+    if(!email || !password){
+        throw new ApiError(400, "user not verify & all fields are required ")
+
+    }try {
+        const user = await User.findOne({email})
+
+        if(!user){
+            throw new ApiError(400, "user not fiends ")
+        }
+
+        if(!user.isEmailVerified){
+            throw new ApiError(400, "verify your email before Login process. ")
+        }
+
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken?.()  
+
+        if(refreshToken){
+            user.refreshToken = refreshToken;
+            await user.save({ velidateBeforeSave: false})
+        }
+
+        
+
+    } catch (error) {
+        
+    }
 
     
 });
@@ -151,4 +206,4 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 
-export { registerUser }
+export { registerUser, verifyEmail }
