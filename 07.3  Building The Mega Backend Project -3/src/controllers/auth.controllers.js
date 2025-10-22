@@ -1,9 +1,10 @@
+import crypto from "crypto"
+import jwt from "jsonwebtoken"
 import  { User } from "../models/user.models.js"
 import { asyncHandler } from "../utils/async-handler.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { ApiError } from "../utils/api-error.js"
 import { sendMail, emailVerificationMailGenContent, forgotPasswordMailGenContent } from "../utils/mail.js";
-import crypto from "crypto"
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -158,11 +159,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
         const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken?.()  
+        const refreshToken = user.generateRefreshToken()  
 
-        if(refreshToken){
-            user.refreshToken = refreshToken;
-        }
+        user.refreshToken = refreshToken;
 
 
         await user.save({ velidateBeforeSave: false})
@@ -174,10 +173,8 @@ const loginUser = asyncHandler(async (req, res) => {
         }
 
         res.cookie("accessToken", accessToken, cookiOption)
+        res.cookie("refreshToken", refreshToken, cookiOption)
 
-        if(accessToken){
-            res.cookie("accessToken", accessToken, cookiOption)
-        }
 
         return res.status(200).json(
             new ApiResponse(
@@ -203,13 +200,34 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     
-});``
+});
 
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const refreshToken = req.cookie.refreshToken || req.body.refreshToken
 
+    if(!refreshToken){
+        throw new ApiError(400, "Unauthorized access")
+    }
+
+    const user = user.findOne({ refreshToken })
     
+    if(!user){
+        throw new ApiError(400, "Unauthorized user access")
+    }
+    
+    user.refreshToken=null;
+
+     await user.save({ velidateBeforeSave: false })
+     
+     res.clearCookie({
+        httpOnly: true,
+        secure: true,
+     })
+
+    return res.status(200).json(
+        new ApiResponse(200, "User logout successfuly")
+    )
 });
 
 
@@ -233,7 +251,35 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
 });
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const { currentPassword, updatePassword } = req.body
+    
+    if(!currentPassword || !updatePassword ){
+        throw new ApiError(400, "Both currentPassword and updatePassword is required!")
+    }
+
+    const user = User.findById(req.user?._id)
+
+    if(!user){
+        throw new ApiError(400, "user is required!")
+    }
+
+    if(updatePassword < 10){
+        throw new ApiError(400, "updatePassword length less than 10 char. ")
+    }
+    user.password = updatePassword  
+
+    await user.save({ velidateBeforeSave: false })
+
+    return req.status(200).json(
+        new ApiResponse(
+            200,
+            {},/* No additional data to return: 
+            The password change was successful, but there's no specific data (like a user object or token)
+             to send back. So, an empty object is used to indicate "no data" while still maintaining
+              a consistent response structure.*/
+            "password update successfuly."
+        )
+    )
 
 });
 
@@ -242,6 +288,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     const {email, username, password, role} = req.body
 
 });
+481
 
-
-export { registerUser, verifyEmail }
+export { registerUser, verifyEmail, loginUser, logoutUser }
