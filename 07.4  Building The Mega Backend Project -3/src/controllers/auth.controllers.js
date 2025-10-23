@@ -288,6 +288,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     const {email, username, password, role} = req.body
 
 });
-481
+
 
 export { registerUser, verifyEmail, loginUser, logoutUser }
