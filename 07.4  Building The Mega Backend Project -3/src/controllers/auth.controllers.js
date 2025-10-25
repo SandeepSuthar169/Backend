@@ -1,10 +1,12 @@
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
-import  { User } from "../models/user.models.js"
+import { User } from "../models/user.models.js"
 import { asyncHandler } from "../utils/async-handler.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { ApiError } from "../utils/api-error.js"
 import { sendMail, emailVerificationMailGenContent, forgotPasswordMailGenContent } from "../utils/mail.js";
+import { emit, send } from "process"
+import { subscribe } from "diagnostics_channel"
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -234,19 +236,170 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 
 const resendVerificationiEmail = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    //1.  get email from req.body
+    const {email} = req.body
+
+    if(!email){
+        throw new ApiError(404, "emil not found ")
+    }
+
+    //2. user fing throw emil
+    const user = User.findOne({email})
+
+    if(!user){
+        throw new ApiError(404, "use not found")
+    }
+    
+    //3. user isEmailVerified or not
+
+    if(user.isEmailVerified){
+        throw new ApiError(400, "user email already verified!")
+    }
+    //4 generate verificaion token
+
+    const { unHashedToken, hashedToken, tokenExpiry } = User.generateTemporyToken()
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
+    //5. user save
+    await user.save({ velidateBeforeSave: false })
+    //6. sending verification token from email
+
+    try {
+        sendMail({
+            email: user.email,
+            subject: "Again your email verify. ",
+            mailGenContent: emailVerificationMailGenContent(
+                user.username,
+                `${process.env.BASE_URL}/api/v1/user/verifyEmail/${unHashedToken}`
+            )
+        })
+    } catch (error) {
+        user.emailVerificationToken = undefined
+        user.emailVerificationExpiry = undefined
+        await user.save({velidateBeforeSave: false})
+
+        throw new ApiError(404, "faild to resend email verification!")
+    }
+
+    // success response
+    return res.status(200).json(
+        new ApiResponse(201, {
+            email: user.email
+        },
+        "User again verify successfully"    
+    )
+    )
+
+    
 
     
 });
 
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    //1. get refreshToken from cookies and body
+    const {incomingRefreshToken} = req.cookie?.refreshToken || req.body.refreshToken
 
+    if(!incomingRefreshToken){
+        throw new ApiError(404, "refresh token not found!")
+    }
+
+    //2. verify refresh token form jwt
+    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    //3. find the user based in decoded id
+
+    const user = User.findById(decodedToken?._id)
+
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+    
+    //4. genrrate new access token or refresh token
+    const newAccessToken = user.generateAccessToken()
+    const newRefreshToken = user.generateRefreshToken()
+    
+    //5. save user
+    await user.save({velidateBeforeSave: false})
+
+    //6. update cookies
+    const cookiOption = {
+        httpOnly: true,
+        secure: true,
+    }
+    //7. save cookie in new accesstoken and refresh token
+
+    res.cookie("accessToken", newAccessToken, cookiOption)
+    res.cookie("refreshToken", newRefreshToken, cookiOption)
+
+
+    
+    //8. success response with new access, refresh token. 
+
+    return res.status(200).json(
+        new ApiResponse(200, 
+            {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken
+            },
+            "New refresh Token save successfully"
+        )
+    )
 });
 
 const forgotPasswordRequest = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    // const {email, username, password, role} = req.body
+    //1. get email from req.body
+    const { email } = req.body
+    
+    if(!email){
+        throw new ApiError(404, "email not found")
+    }
+    //2. find user from email
+    const user = User.findOne({ email })
+
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+
+    const { hashedToken, tokenExpiry, unHashedToken } = User.generateTemporyToken()
+    //3. forgotPasswordToken and forgotPasswordExpiry update from is generateTemporyToken
+
+    user.forgotPasswordToken = hashedToken
+    user.forgotPasswordExpiry = tokenExpiry
+    //4. user save
+    await user.save({ velidateBeforeSave: false})
+    //5. send email so that mailGenContent in  forgetPasswordGencontent
+    
+    try {
+        sendMail({
+            email: user.email,
+            subject: "forgot password token and expiry",
+            mailGenContent: forgotPasswordMailGenContent(
+                user.username,
+                `${process.env.BASE_URL}/api/v1/user/verifyEmail/${unHashedToken}`
+            )
+        })
+    } catch (error) {
+        user.forgotPasswordToken = undefined
+        user.forgotPasswordExpiry = undefined
+        await user.save({velidateBeforeSave: false})
+
+        throw new ApiError(400, "forgot password not successfully")
+    }
+
+
+    return res.status(200).json(
+        new ApiResponse(200, 
+            {
+                email: user.email
+            },
+            "Password reset"
+        )
+    )
+    
+    
+    //6. handle catch part
+
 
 });
 
@@ -285,9 +438,38 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    if(!req.user || !req.user?._id){
+        throw new ApiError(404, "Unauthorized user not accessed")
+    }
+
+    const { user } = User.findById(req.user._id).select("-passwoed -refreshToken -forgotPasswordToken -forgotPasswordExpiry")
+
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+
+    return res.status(200).json(200,
+        {
+            user: user._id,
+            email: user.email,
+            fullname: user.fullname,
+            password: user.password,
+            isEmailVerified: user.isEmailVerified
+        },
+        "user information get successfully"
+    )
 
 });
 
 
-export { registerUser, verifyEmail, loginUser, logoutUser }
+export { 
+    registerUser, 
+    verifyEmail,
+    refreshAccessToken, 
+    resendVerificationiEmail, 
+    forgotPasswordRequest,
+    changeCurrentPassword,  
+    loginUser, 
+    logoutUser,
+    getCurrentUser 
+}
