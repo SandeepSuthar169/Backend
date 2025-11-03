@@ -10,7 +10,12 @@ const userRegistrationValidator = () => {
             .trim()
             .notEmpty().withMessage("username is required")
             .isLength({min: 3}).withMessage("username should be at least 2 char")
-            .isLength({max: 13}).withMessage("username cannot exceed 13 char")
+            .isLength({max: 13}).withMessage("username cannot exceed 13 char"),        
+        // body("fullname")
+        //     .trim()
+        //     .notEmpty().withMessage("fullname is required")
+        //     .isLength({min: 3}).withMessage("fullname should be at least 2 char")
+        //     .isLength({max: 13}).withMessage("fullname cannot exceed 13 char"),        
     ]
 }
 
@@ -18,11 +23,29 @@ const userRegistrationValidator = () => {
 const userLoginValidator = () => {
     return [
         body('email')
-            .isEmail().withMessage("Email is not valid"),
+            .isEmail().withMessage("Email is not valid")
+            .notEmpty().withMessage("Email is required"),
         body("password")
-            .notEmpty().withMessage("Password connot be empty")    
+            .notEmpty().withMessage("Password connot be empty")
+            .isLength({min: 5}).withMessage("password should be at length gt 5") 
+            .isLength({max: 20}).withMessage("password should be at length ls 20") 
 
     ]
 } 
 
-export { userRegistrationValidator, userLoginValidator }
+const userLogoutValidator = () => {
+    return [
+        body("email")
+            .isEmail().withMessage("Email is not valid")
+            .notEmpty().withMessage("Email is required"),
+        body("password")
+            .isLength({min: 5}).withMessage("password should be at length gt 5") 
+            .isLength({max: 20}).withMessage("password should be at length ls 20") 
+    ]
+}
+
+export { 
+    userRegistrationValidator, 
+    userLoginValidator,
+    userLogoutValidator
+}
