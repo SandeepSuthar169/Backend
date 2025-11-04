@@ -134,6 +134,13 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const {email,  password } = req.body
+
+    
+    console.log("=== DEBUG JWT MIDDLEWARE ===");
+    console.log("Cookies:", req.cookies);
+    console.log("Auth Header:", req.header("Authorization"));
+    console.log("All headers:", req.header);
+    console.log("============================");
     
 
     if(!email || !password){
@@ -165,7 +172,6 @@ const loginUser = asyncHandler(async (req, res) => {
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()  
 
-        console.log(accessToken, refreshToken);
         
 
         user.refreshToken = refreshToken;
@@ -175,7 +181,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
         const cookiOption = {
             httpOnly: true,
-            secure: true,
+            secure: false,
+            sameSite: "lax"
         }
 
         res.cookie("accessToken", accessToken, cookiOption)
@@ -207,6 +214,9 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
+
+    
+
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -239,116 +249,130 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 
-// const resendVerificationiEmail = asyncHandler(async (req, res) => {
-//     //1.  get email from req.body
-//     const {email} = req.body
+const resendVerificationiEmail = asyncHandler(async (req, res) => {
+    //1.  get email from req.body
+    const {email} = req.body
 
-//     if(!email){
-//         throw new ApiError(404, "emil not found ")
-//     }
-
-//     //2. user fing throw emil
-//     const user = User.findOne({email})
-
-//     if(!user){
-//         throw new ApiError(404, "use not found")
-//     }
-    
-//     //3. user isEmailVerified or not
-
-//     if(user.isEmailVerified){
-//         throw new ApiError(400, "user email already verified!")
-//     }
-//     //4 generate verificaion token
-
-//     const { unHashedToken, hashedToken, tokenExpiry } = User.generateTemporyToken()
-//     user.emailVerificationToken = hashedToken;
-//     user.emailVerificationExpiry = tokenExpiry;
-//     //5. user save
-//     await user.save({ velidateBeforeSave: false })
-//     //6. sending verification token from email
-
-//     try {
-//         sendMail({
-//             email: user.email,
-//             subject: "Again your email verify. ",
-//             mailGenContent: emailVerificationMailGenContent(
-//                 user.username,
-//                 `${process.env.BASE_URL}/api/v1/user/verifyEmail/${unHashedToken}`
-//             )
-//         })
-//     } catch (error) {
-//         user.emailVerificationToken = undefined
-//         user.emailVerificationExpiry = undefined
-//         await user.save({velidateBeforeSave: false})
-
-//         throw new ApiError(404, "faild to resend email verification!")
-//     }
-
-//     // success response
-//     return res.status(200).json(
-//         new ApiResponse(201, {
-//             email: user.email
-//         },
-//         "User again verify successfully"    
-//     )
-//     )
-
+    console.log(req.body);
     
 
+    if(!email){
+        throw new ApiError(404, "emil not found ")
+    }
+
+    //2. user fing throw emil
+    const user = await User.findOne({email})
+
+
+    console.log("================user===================");
+    // console.log(user);
+    console.log("================user===================");
     
-// });
 
-
-// const refreshAccessToken = asyncHandler(async (req, res) => {
-//     //1. get refreshToken from cookies and body
-//     const {incomingRefreshToken} = req.cookie?.refreshToken || req.body.refreshToken
-
-//     if(!incomingRefreshToken){
-//         throw new ApiError(404, "refresh token not found!")
-//     }
-
-//     //2. verify refresh token form jwt
-//     const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
-//     //3. find the user based in decoded id
-
-//     const user = User.findById(decodedToken?._id)
-
-//     if(!user){
-//         throw new ApiError(404, "user not found")
-//     }
+    if(!user){
+        throw new ApiError(404, "use not found")
+    }
     
-//     //4. genrrate new access token or refresh token
-//     const newAccessToken = user.generateAccessToken()
-//     const newRefreshToken = user.generateRefreshToken()
+    //3. user isEmailVerified or not
+
+    if(user.isEmailVerified){
+        throw new ApiError(400, "user email already verified!")
+    }
+    //4 generate verificaion token
+
+    const { unHashedToken, hashedToken, tokenExpiry } = await user.generateTemporyToken()
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
+    //5. user save
+    await user.save({ velidateBeforeSave: false })
+    //6. sending verification token from email
+
+    try {
+        sendMail({
+            email: user.email,
+            subject: "Again your email verify. ",
+            mailGenContent: emailVerificationMailGenContent(
+                user.username,
+                `${process.env.BASE_URL}/api/v1/user/verifyEmail/${unHashedToken}`
+            )
+        })
+    } catch (error) {
+        user.emailVerificationToken = undefined
+        user.emailVerificationExpiry = undefined
+        await user.save({velidateBeforeSave: false})
+
+        throw new ApiError(404, "faild to resend email verification!")
+    }
+
+    // success response
+    return res.status(200).json(
+        new ApiResponse(201, {
+            email: user.email
+        },
+        "User again verify successfully"    
+    )
+    )
+
     
-//     //5. save user
-//     await user.save({velidateBeforeSave: false})
 
-//     //6. update cookies
-//     const cookiOption = {
-//         httpOnly: true,
-//         secure: true,
-//     }
-//     //7. save cookie in new accesstoken and refresh token
+    
+});
 
-//     res.cookie("accessToken", newAccessToken, cookiOption)
-//     res.cookie("refreshToken", newRefreshToken, cookiOption)
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+
+    console.log(req.cookie);
+    console.log(req.body);
+    
+    
+    //1. get refreshToken from cookies and body
+    const  incomingRefreshToken  = req.cookie?.refreshToken || req.body?.refreshToken
+
+    if(!incomingRefreshToken){
+        throw new ApiError(404, "refresh token not found!")
+    }
+
+    //2. verify refresh token form jwt
+    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    //3. find the user based in decoded id
+
+    const user = User.findById(decodedToken?._id)
+
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+    
+    //4. genrrate new access token or refresh token
+    const newAccessToken = user.generateAccessToken()
+    const newRefreshToken = user.generateRefreshToken()
+    
+    //5. save user
+    await user.save({velidateBeforeSave: false})
+
+    //6. update cookies
+    const cookiOption = {
+        httpOnly: true,
+        secure: true,
+    }
+    //7. save cookie in new accesstoken and refresh token
+
+    res.cookie("accessToken", newAccessToken, cookiOption)
+    res.cookie("refreshToken", newRefreshToken, cookiOption)
 
 
     
-//     //8. success response with new access, refresh token. 
+    //8. success response with new access, refresh token. 
 
-//     return res.status(200).json(
-//         new ApiResponse(200, 
-//             {
-//                 accessToken: newAccessToken,
-//                 refreshToken: newRefreshToken
-//             },
-//             "New refresh Token save successfully"
-//         )
-//     )
-// });
+    return res.status(200).json(
+        new ApiResponse(200, 
+            {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken
+            },
+            "New refresh Token save successfully"
+        )
+    )
+});
 
 // const forgotPasswordRequest = asyncHandler(async (req, res) => {
 //     // const {email, username, password, role} = req.body
@@ -469,8 +493,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 export { 
     registerUser, 
     verifyEmail,
-    // refreshAccessToken, 
-    // resendVerificationiEmail, 
+    refreshAccessToken, 
+    resendVerificationiEmail, 
     // forgotPasswordRequest,
     // changeCurrentPassword,  
     loginUser, 

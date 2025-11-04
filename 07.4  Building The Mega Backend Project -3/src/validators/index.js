@@ -43,9 +43,18 @@ const userLogoutValidator = () => {
             .isLength({max: 20}).withMessage("password should be at length ls 20") 
     ]
 }
+const userVerificationiEmailtValidator = () => {
+    return [
+        body("email")
+            .isEmail().withMessage("Email is not valid")
+            .notEmpty().withMessage("Email is required"),
+        
+    ]
+}
 
 export { 
     userRegistrationValidator, 
     userLoginValidator,
-    userLogoutValidator
+    userLogoutValidator,
+    userVerificationiEmailtValidator
 }

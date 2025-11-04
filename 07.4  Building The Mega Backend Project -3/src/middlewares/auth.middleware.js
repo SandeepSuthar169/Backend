@@ -4,14 +4,18 @@ import { User } from "../models/user.models.js"
 import { ApiError} from "../utils/api-error.js"
 import { asyncHandler } from "../utils/async-handler.js"
 import { ProjectMember } from "../models/projectmember.models.js";
-import cookieParser from "cookie-parser";
-app.use(cookieParser());
 
 
 
-export const verifyJWT = asyncHandler(async (req, _, next) => {   // req, res, === req, _, 
+export const verifyJWT = asyncHandler(async (req, res, next) => {   // req, res, === req, _, 
 
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+
+console.log("=== DEBUG JWT MIDDLEWARE ===");
+console.log("Cookies:", req.cookies);
+console.log("Auth Header:", req.header("Authorization"));
+console.log("All headers:", req.headers);
+console.log("============================");
 
     
       if(!token){
