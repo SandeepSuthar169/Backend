@@ -50,7 +50,7 @@ const createNote = async(req, res) => {
     const project = await Project.findById(projectId)
 
     if(!project){
-        throw new ApiError("404", "project not fount")
+        throw new ApiError(404, "project not fount")
     }
 
     const note = ProjectNote.create({
