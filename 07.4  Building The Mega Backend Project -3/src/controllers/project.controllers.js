@@ -4,7 +4,8 @@ import { ApiResponse } from "../utils/api-response";
 import { ProjectMember } from "../models/projectmember.models.js"
 import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
-import { UserRolesEnum } from "../utils/constants.js";
+import { AvailableUserRoles, UserRolesEnum } from "../utils/constants.js";
+import { Router } from "express";
 
 
 
@@ -148,7 +149,7 @@ const updateProject = asyncHandler(async (req, res) => {
         throw new ApiError(404, "existing project not found")
     }
 
-    const project = Project.findByIdAndUpdate(
+    const project = await Project.findByIdAndUpdate(
         projectId,
         {
             name, description
@@ -231,24 +232,137 @@ const addMemberToProject = asyncHandler(async (req, res) => {
 });
 
 const getProjectMembers = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const projectId = req.params
+    const projectMembers = await ProjectMember.find({projectId}).populate({
+        path: "user",
+        select: "username fullName avatar"
+    }).select("priject user role createdAt updateAt -_id")
+
+    if(!projectMembers){
+        throw new ApiError(404, "Project member is required")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+        projectMembers,
+        "project member fetch successfully")
+    )
 
 });
 
 const updateProjectMembers = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const projectId = req.params
 
+    if(!projectId){
+        throw new ApiError(404, "Project member is required")
+    }
+
+    const projectMembers = await ProjectMember.find({projectId})
+    
+    if(!projectMembers){
+        throw new ApiError(404, "Project member is required")
+    }
+
+    const { email, username, role } = req.body
+
+    const user = User.findOne({
+        $or: [{email}, username]
+    })
+
+    if(!user){
+        throw new ApiError(404, "user is required")
+    }
+
+
+    const updateProjectMember =  await ProjectMember.findOneAndUpdate(
+        {
+            user: user._id,
+            project:  projectId,
+            role: role
+        },
+        {
+            new: true
+        }
+    );
+
+    if(!updateProjectMember){
+        throw new ApiError(404, "user is required")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Project member update successfully"
+        )
+    )
+
+    
 });
 
 
 const updateMemberRole = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const { newRole, projectId, userId } = req.body
 
+    if(!newRole || !projectId || !userId){
+        throw new ApiError(404, "project member info is  required")
+    }
+    
+    if(!AvailableUserRoles.includes(newRole)){
+        throw new ApiError(401, "Invalid role")
+    }
+
+    const projectmember = await ProjectMember.findOne({
+        project: projectId,
+        user: userId
+    })
+
+    if(!projectmember){
+        throw new ApiError(404, "project member is required")
+    }
+
+    ProjectMember.role = newRole
+
+    await ProjectMember.save({ velidateBeforeSave: true })
+    
+    return res.status(200).json(new ApiResponse(
+        200,
+        {
+            role: ProjectMember.newRole,
+            project: ProjectMember.project,
+            user: ProjectMember.user,
+        }
+    ))
 });
 
 
 const deleteMember = asyncHandler(async (req, res) => {
-    const {email, username, password, role} = req.body
+    const { projectId, userId } = req.body
+
+    if( !projectId || !userId){
+        throw new ApiError(404, "project member info is  required")
+    }
+
+    const projectmember = await ProjectMember.findOne({
+        project: projectId,
+        user: userId
+    })
+
+    if(!projectmember){
+        throw new ApiError(404, "project member is required")
+    }
+
+    const delProjectMember = await ProjectMember.findByIdAndDelete(projectmember._id)
+
+    if(!delProjectMember){
+        throw new ApiError(404, "delete Project member is required")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(201,
+            delProjectMember,    
+            "delete project member successfully")
+    )
 
 });
 
