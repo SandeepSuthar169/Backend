@@ -193,7 +193,9 @@ const updateTask = asyncHandler(async(req, req) =>{
     const { projectId, taskId} = req.params
 
     const { project } = await Project.findById(projectId)
+    
     const { task } = await Project.findById(taskId)
+
 
     if(!project || !taskId) throw new ApiError(404, "task not found!")
 
@@ -208,31 +210,22 @@ const updateTask = asyncHandler(async(req, req) =>{
             url: `${process.env.BASE_URL}/images/${file.originalname}`,
             mimetype: file.mimetype,
             size: file.size
-    }
+        }
     })
 
-    if(!attachments){
-        throw new ApiError(404, "files not found!")
-    }
+    if(!attachments)  throw new ApiError(404, "files not found!")
 
-    if(title){
-        task.title = title
-    }
-    if(description){
-        task.description = description
-    }
-    if(status){
-        task.status = status
-    }
-    if(status){
-        task.status = status
-    }
-    if(assignedTo){
-        task.assignedTo = assignedTo
-    }
-    if(attachments.length > 0){
-        task.attachments.push(...attachments)
-    }
+    if(title)  task.title = title
+    
+    if(description)  task.description = description
+    
+    if(status)  task.status = status
+    
+    if(status)  task.status = status
+    
+    if(assignedTo)  task.assignedTo = assignedTo
+    
+    if(attachments.length > 0)  task.attachments.push(...attachments)
 
     await task.save({validateBeforeSave: true})
 
@@ -240,9 +233,7 @@ const updateTask = asyncHandler(async(req, req) =>{
         .populate("assignedTo", "avatar username fullName")
         .populate("assignedBy", "avatar fullName username")
 
-    if(!updateTask){
-            throw new ApiError(401, "updateTask not found")
-    }
+    if(!updateTask)  throw new ApiError(401, "updateTask not found")
 
     return res.status(200).json(200, updateTask, "update task successfully")
 
@@ -303,7 +294,57 @@ const createSubTask = asyncHandler(async(req, req) =>{
 })
 
 const getSubTask = asyncHandler(async(req, req) => {
+    //1. find taskId useing req.params
+    const { taskId } = req.params
 
+    if(!taskId) throw new ApiError(401, "taskId not found")
+    //2. subtask aggregation pipeline
+    const subtask = subTask.aggregate([
+      {
+        $match: new mongoose.Types.ObjectId(taskId)
+      },
+      {
+        from: "users",
+        localField: "createBy",
+        foreignField: "_id",
+        as: "createBy",
+        project: [
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              avatar: 1,
+              fullName: 1
+            }
+          }
+        ]
+      },
+      {
+        $addFields: {
+          createBy: {
+            $arrayElemAt: ["$createby", 0]
+          }
+        }
+      },
+      {
+        $sort: {
+          createby: -1
+        }
+      }
+    ])
+    
+    //3. validate
+    if(!subtask) throw new ApiError(401, "subTask not found")
+
+    //4. return
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        subTask,
+        "subTask fetch successfully"
+
+      )
+    )
 })
 
 
