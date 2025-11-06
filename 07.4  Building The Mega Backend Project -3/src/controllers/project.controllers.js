@@ -236,7 +236,7 @@ const getProjectMembers = asyncHandler(async (req, res) => {
     const projectMembers = await ProjectMember.find({projectId}).populate({
         path: "user",
         select: "username fullName avatar"
-    }).select("priject user role createdAt updateAt -_id")
+    }).select("project user role createdAt updateAt -_id")
 
     if(!projectMembers){
         throw new ApiError(404, "Project member is required")
