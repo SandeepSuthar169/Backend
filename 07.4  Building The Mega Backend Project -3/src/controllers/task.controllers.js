@@ -350,8 +350,38 @@ const getSubTask = asyncHandler(async(req, req) => {
 
 
 const updateSubTask = asyncHandler(async(req, req) =>{
+    const {title, isCompleted} = req.body
+
+    if(!title || !isCompleted) throw new ApiError(401, "subTask info is required")
+
+    const { taskId } = req.params
+
+    if(!taskId) throw new ApiError(401, "subTask info is required")
+
+    const { task } = await Task.findById(taskId)
+
+    if(!task) throw new ApiError(401, "subTask info is required")
+
+    const subTask = await subTask.findOneAndUpdate(
+      {
+        title,
+        task: new mongoose.Types.ObjectId(taskId),
+        isCompleted,
+        createBy: new mongoose.Types.ObjectId(req.user._id)
+      }
+    )
+
+    if(!subTask) throw new ApiError(401, "subTask not found")
+
+    return res.status(200).json(new ApiResponse(
+      200,
+      subTask,
+      "subTask update successfully"
+    ))
+
 
 })
+
 
 
 const deleteSubTask = asyncHandler(async(req, req) =>{

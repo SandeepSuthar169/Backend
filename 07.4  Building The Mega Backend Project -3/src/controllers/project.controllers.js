@@ -5,6 +5,7 @@ import { ProjectMember } from "../models/projectmember.models.js"
 import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
 import { AvailableUserRoles, UserRolesEnum } from "../utils/constants.js";
+import mongoose, { Mongoose } from "mongoose";
 
 
 
@@ -62,9 +63,7 @@ const getProjects = asyncHandler(async (req, res) => {
 
         ]);
 
-        if(!project){
-            throw new ApiError(404, "Project is required!")
-        }
+        if(!project) throw new ApiError(404, "Project is required!")
         console.log(project);
         
 
@@ -83,9 +82,7 @@ const getProjectById = asyncHandler(async (req, res) => {
 
     const proiect = await Project.findById(projectId)
 
-    if(!proiect){
-        throw new ApiError(401, "project not found")
-    }
+    if(!proiect)  throw new ApiError(401, "project not found")
 
     return res.status(200).json(
         new ApiResponse(
@@ -112,9 +109,7 @@ const createProject = asyncHandler(async (req, res) => {
         createdBy: req.user._id
     })
 
-    if(!project){
-        throw new ApiError(404, "Project not found" )
-    }
+    if(!project)  throw new ApiError(404, "Project not found" )
 
     await ProjectMember.create({
         user: req.user._id,
@@ -132,20 +127,14 @@ const updateProject = asyncHandler(async (req, res) => {
 
     const { name, description } = req.body
 
-    if(!projectId){
-        throw new ApiError(404, "Project Id is required")
-    }
+    if(!projectId)  throw new ApiError(404, "Project Id is required")
 
 
-    if(!name || !description){
-        throw new ApiError(404, "User info is required")
-    }
+    if(!name || !description)  throw new ApiError(404, "User info is required")
 
     const existingProject = await Project.findById(projectId)
 
-    if(existingProject){
-        throw new ApiError(404, "existing project not found")
-    }
+    if(existingProject) throw new ApiError(404, "existing project not found")
 
     const project = await Project.findByIdAndUpdate(
         projectId,
@@ -157,9 +146,7 @@ const updateProject = asyncHandler(async (req, res) => {
         }
     )
 
-    if(!project){
-        throw new ApiError(401, "Project not found")
-    }
+    if(!project)  throw new ApiError(401, "Project not found")
 
     return res.status(200).json(new ApiResponse(200, project, "project update successfully"))
 
@@ -169,16 +156,12 @@ const updateProject = asyncHandler(async (req, res) => {
 const deleteProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params
 
-    if(!projectId){
-        throw new ApiError(404, "Project Id is required")
-    }
+    if(!projectId)  throw new ApiError(404, "Project Id is required")
 
 
     const delProject = await Project.findByIdAndDelete(projectId)
 
-    if(!delProject){
-        throw new ApiError(404, "project delete not found")
-    }
+    if(!delProject)  throw new ApiError(404, "project delete not found")
 
     return res.status(200,
         new ApiResponse(200, "project delete successfully")
@@ -187,13 +170,14 @@ const deleteProject = asyncHandler(async (req, res) => {
 });
 
 const addMemberToProject = asyncHandler(async (req, res) => {
-    const { projectId } = req.params
     const { email, username, role} = req.body
-
+    
     if(!email || !username || !role){
         throw new ApiError(404, "User info is required")
     }
-
+    
+    const { projectId } = req.params
+    
     if(!projectId){
         throw new ApiError(404, "Project Id is required")
     }
@@ -250,17 +234,13 @@ const getProjectMembers = asyncHandler(async (req, res) => {
 });
 
 const updateProjectMembers = asyncHandler(async (req, res) => {
-    const projectId = req.params
+    const { projectId } = req.params
 
-    if(!projectId){
-        throw new ApiError(404, "Project member is required")
-    }
+    if(!projectId)  throw new ApiError(404, "Project member is required")
 
     const projectMembers = await ProjectMember.find({projectId})
     
-    if(!projectMembers){
-        throw new ApiError(404, "Project member is required")
-    }
+    if(!projectMembers)  throw new ApiError(404, "Project member is required")
 
     const { email, username, role } = req.body
 
@@ -268,15 +248,13 @@ const updateProjectMembers = asyncHandler(async (req, res) => {
         $or: [{email}, username]
     })
 
-    if(!user){
-        throw new ApiError(404, "user is required")
-    }
+    if(!user)  throw new ApiError(404, "user is required")
 
 
     const updateProjectMember =  await ProjectMember.findOneAndUpdate(
         {
-            user: user._id,
-            project:  projectId,
+            user: new mongoose.Types.ObjectId(req.user._id),
+            project:  new Mongoose.Types.ObjectId(projectId),
             role: role
         },
         {
@@ -311,8 +289,8 @@ const updateMemberRole = asyncHandler(async (req, res) => {
     }
 
     const projectmember = await ProjectMember.findOne({
-        project: projectId,
-        user: userId
+        project: new mongoose.Types.ObjectId(projectId),
+        user: new mongoose.Types.ObjectId(req.user._id),
     })
 
     if(!projectmember){
