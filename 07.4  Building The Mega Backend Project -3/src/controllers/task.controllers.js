@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import { Task }  from "../models/task.models.js"
 import { User } from "../models/user.models.js"
 import { subTask } from "../models/subtask.modes.js"
@@ -5,16 +6,14 @@ import { Project } from "../models/project.models.js"
 import { ApiError } from "../utils/api-error.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { asyncHandler } from "../utils/async-handler"
-import { urlencoded } from "express"
+import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants"
 
 
 const getTasks = asyncHandler(async(req, req) =>{
     const { projectId } = req.params
     const proiect = await Project.findById(projectId)
 
-    if(!proiect){
-        throw new ApiError(401, "project not found")
-    }
+    if(!proiect)  throw new ApiError(401, "project not found")
 
     const task = await Task.aggregate([
         {
@@ -49,9 +48,7 @@ const getTasks = asyncHandler(async(req, req) =>{
         }
     ])
 
-    if(!task){
-        throw new ApiError(404, "Taks not found")
-    }
+    if(!task)  throw new ApiError(404, "Taks not found")
 
     return res.satatus(200).json(
         new ApiResponse(200,
@@ -135,9 +132,7 @@ const getTasksById = asyncHandler(async(req, req) =>{
         ])
 
         //3. validatin of task 
-        if(!task){
-            throw new ApiError(404, "task not found!")
-        }
+        if(!task)  throw new ApiError(404, "task not found!")
 
     //4. return successfully 
         return res.satatus(200).json(new ApiResponse(200, task, "task fatched successfully"))
@@ -148,23 +143,17 @@ const createTask = asyncHandler(async(req, req) =>{
     //1. find project
     const { title, description, status, assignedTo} = req.body
 
-    if(!title || !description || !status || !assignedTo){
-        throw new ApiError(404, "user info not found!")
-    }
+    if(!title || !description || !status || !assignedTo)  throw new ApiError(404, "user info not found!")
     const { projectId } = req.params
 
     const { project } = await Project.findById(projectId)
     //2. validate project
-    if(!project){
-        throw new ApiError(404, "task not found!")
-    }
+    if(!project)  throw new ApiError(404, "task not found!")
     //3. get the files form req.files
 
     const files = req.files || []
 
-    if(!files){
-        throw new ApiError(404, "files not found!")
-    }
+    if(!files)  throw new ApiError(404, "files not found!")
     //4. create affachments
 
     const attachments = files.map((file) => {
@@ -175,9 +164,7 @@ const createTask = asyncHandler(async(req, req) =>{
     }
     })
 
-    if(!attachments){
-        throw new ApiError(404, "files not found!")
-    }
+    if(!attachments) throw new ApiError(404, "files not found!")
     //5. create task
 
     const task = Task.create({
@@ -190,9 +177,7 @@ const createTask = asyncHandler(async(req, req) =>{
         attachments
     })
 
-    if(!task){
-        throw new ApiError(404, "task not found!")
-    }
+    if(!task) throw new ApiError(404, "task not found!")
     //6. return successfully
 
     return res.status(201).json(new ApiResponse(201, task, "task create successfully"))
@@ -210,16 +195,12 @@ const updateTask = asyncHandler(async(req, req) =>{
     const { project } = await Project.findById(projectId)
     const { task } = await Project.findById(taskId)
 
-    if(!project || !taskId){
-        throw new ApiError(404, "task not found!")
-    }
+    if(!project || !taskId) throw new ApiError(404, "task not found!")
 
 
     const files = req.files || []
 
-    if(!files){
-        throw new ApiError(404, "files not found!")
-    }
+    if(!files)  throw new ApiError(404, "files not found!")
     //4. create affachments
 
     const attachments = files.map((file) => {
@@ -270,18 +251,61 @@ const updateTask = asyncHandler(async(req, req) =>{
 
 
 const deleteTask = asyncHandler(async(req, req) =>{
+    //1. task get by taskId
+    const { taskId } = req.params
+    if(!taskId) throw new ApiError(401, "taskId not found")
+    //2. validate task
 
+
+    //3. delete task by taskId
+
+    const deleTask = await Task.findOneAndDelete(taskId)
+    
+    //4. validate delete task
+    if(!deleTask) throw new ApiError(401, "delete task not success")
+    //5. return success
+
+    return res.status(200).json(new ApiResponse(200, deleTask, "delete task successfully"))
 })
 
 
-const getSubTask = asyncHandler(async(req, req) =>{
+const createSubTask = asyncHandler(async(req, req) =>{
+    //1. get subTask info by req.body
+    const { title } = req.body
+
+    if(!title) throw new ApiError(404, "title is required")
+    const { taskId } = req.params
+
+    if(!taskId) throw new ApiError(404, "title is required")
+    //2. find task by taskId
+
+    const task = await Task.findById(taskId)
+
+    if(!task)  throw new ApiError(404, "title is required")
+
+    //3. crate subTask
+
+    const subTask = await subTask.create({
+        title,
+        task: new mongoose.Types.ObjectId(task._id),
+        createdBy: new mongoose.Types.ObjectId(req.user._id)
+    })
+    
+    //4. validate fileds
+    if(!subTask) throw new ApiError(403, "subTask not create")
+    //5. return success
+
+    return res.status(200).json(new ApiResponse(
+        200,
+        subTask,
+        "subTask create successfully"
+    ))
+})
+
+const getSubTask = asyncHandler(async(req, req) => {
 
 })
 
-
-const addSubTaskToTask = asyncHandler(async(req, req) =>{
-
-})
 
 
 const updateSubTask = asyncHandler(async(req, req) =>{
@@ -300,7 +324,7 @@ export{
     updateTask,
     deleteTask,
     getSubTask,
-    addSubTaskToTask,
+    createSubTask,
     updateSubTask,
     deleteSubTask,
 }
