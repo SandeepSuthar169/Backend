@@ -168,7 +168,11 @@ const updateProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params
 
     const { name, description } = req.body
-
+    
+    // console.log("project Id  ==>>", projectId);
+    // console.log("project name  ==>>", name);
+    // console.log("project description  ==>>", description);
+    
     if(!projectId)  throw new ApiError(404, "Project Id is required")
 
 
@@ -176,7 +180,7 @@ const updateProject = asyncHandler(async (req, res) => {
 
     const existingProject = await Project.findById(projectId)
 
-    if(existingProject) throw new ApiError(404, "existing project not found")
+    if(!existingProject) throw new ApiError(404, "existing project not found")
 
     const project = await Project.findByIdAndUpdate(
         projectId,
@@ -198,10 +202,27 @@ const updateProject = asyncHandler(async (req, res) => {
 const deleteProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params
 
+    console.log(projectId);
+    
+
     if(!projectId)  throw new ApiError(404, "Project Id is required")
 
+    if(!mongoose.Types.ObjectId.isValid(projectId)) {
+        throw new ApiError(400, "Invalid Project ID format");
+    }
 
-    const delProject = await Project.findByIdAndDelete(projectId)
+    // const projectExists = await Project.findById(projectId);
+    // console.log("Project exists:", projectExists);
+    
+    // if(!projectExists) {
+    //     throw new ApiError(404, "Project not found");
+    // }
+
+    const delProject = await Project.findOneAndDelete({ _id: projectId })
+    console.log(projectId);  
+
+    console.log(delProject);
+    
 
     if(!delProject)  throw new ApiError(404, "project delete not found")
 
