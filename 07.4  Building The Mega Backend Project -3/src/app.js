@@ -24,7 +24,9 @@ app.use(express.urlencoded(
 
 import authRoute from "./routes/auth.routes.js"
 import healthCheckRouter from "./routes/helthcheck.routes.js"
+import projectRoute from "./routes/project.routes.js"
 
-app.use("/api/v1/healthcheck", healthCheckRouter)
 app.use("/api/v1/auth", authRoute)
+app.use("/api/v1/healthcheck", healthCheckRouter)
+app.use("/api/v1/project", projectRoute)
 export default app;

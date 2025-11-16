@@ -1,6 +1,6 @@
-import { asyncHandler } from "../utils/async-handler";
-import { ApiError } from "../utils/api-error";
-import { ApiResponse } from "../utils/api-response";
+import { asyncHandler } from "../utils/async-handler.js";
+import { ApiError } from "../utils/api-error.js";
+import { ApiResponse } from "../utils/api-response.js";
 import { ProjectMember } from "../models/projectmember.models.js"
 import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
@@ -10,6 +10,31 @@ import mongoose, { Mongoose } from "mongoose";
 
 
 
+const createProject = asyncHandler(async (req, res) => {
+
+    const { name, description } = req.body
+    if(!name || !description) throw new ApiError(401, "project info is required")
+
+    const { userId } =  req.params 
+    if(!userId) throw new ApiError(401, "user id is required")
+
+    const user = await User.findById(userId)
+    if(!user) throw new ApiError(401, "user  is required")
+
+    const project = await Project.create({
+        name,
+        description,
+        createdBy: user._id
+    })
+
+    if(!project)  throw new ApiError(404, "Project not found" )
+
+
+    
+    return res.status(200).json(new ApiResponse(200, project, "Project create successfully"))
+
+
+});
 
 const getProjects = asyncHandler(async (req, res) => {
         const project = await ProjectMember.aggregate([
@@ -96,31 +121,7 @@ const getProjectById = asyncHandler(async (req, res) => {
 
 });
 
-`                 `
-const createProject = asyncHandler(async (req, res) => {
 
-    const { name, description } = req.body
-
-    const { projectId } = req.params
-
-    const project = await Project.create({
-        name,
-        description,
-        createdBy: req.user._id
-    })
-
-    if(!project)  throw new ApiError(404, "Project not found" )
-
-    await ProjectMember.create({
-        user: req.user._id,
-        project: projectId,
-        role: UserRolesEnum.ADMIN
-    })
-    
-    return res.status(200).json(new ApiResponse(200, project, "Project create successfully"))
-
-
-});
 
 const updateProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params
@@ -169,6 +170,17 @@ const deleteProject = asyncHandler(async (req, res) => {
 
 });
 
+const createProjectMenbers = asyncHandler(async (req, res) => {
+    const { projectId } = req.params
+
+    await ProjectMember.create({
+        user: req.user._id,
+        project: projectId,
+        role: UserRolesEnum.ADMIN
+    })
+
+})
+
 const addMemberToProject = asyncHandler(async (req, res) => {
     const { email, username, role} = req.body
     
@@ -212,6 +224,8 @@ const addMemberToProject = asyncHandler(async (req, res) => {
 
 
 });
+
+
 
 const getProjectMembers = asyncHandler(async (req, res) => {
     const projectId = req.params
