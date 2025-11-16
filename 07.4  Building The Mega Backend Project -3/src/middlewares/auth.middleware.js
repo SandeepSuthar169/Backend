@@ -11,11 +11,11 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {   // req, res,
 
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
 
-console.log("=== DEBUG JWT MIDDLEWARE ===");
-console.log("Cookies:", req.cookies);
-console.log("Auth Header:", req.header("Authorization"));
-console.log("All headers:", req.headers);
-console.log("============================");
+// console.log("=== DEBUG JWT MIDDLEWARE ===");
+// console.log("Cookies:", req.cookies);
+// console.log("Auth Header:", req.header("Authorization"));
+// console.log("All headers:", req.headers);
+// console.log("============================");
 
     
       if(!token){

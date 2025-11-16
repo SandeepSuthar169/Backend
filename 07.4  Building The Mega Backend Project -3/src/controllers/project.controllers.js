@@ -5,6 +5,7 @@ import { ProjectMember } from "../models/projectmember.models.js"
 import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
 import { AvailableUserRoles, UserRolesEnum } from "../utils/constants.js";
+
 import mongoose, { Mongoose } from "mongoose";
 
 
@@ -36,71 +37,39 @@ const createProject = asyncHandler(async (req, res) => {
 
 });
 
-const getProjects = asyncHandler(async (req, res) => {
-        const project = await ProjectMember.aggregate([
-            {
-                $match: {
-                    user: req.user._id
-                }
-            },
-            {
-                $lookup: {
-                    from: "projects",
-                    localField: "project",
-                    foreignField: "_id",
-                    as: "project",
-                    pipeline: [
-                       { 
-                        $lookup: {
-                            from: "projectmembers",
-                            localField: "_id",
-                            foreignField: "project",
-                            as: "projectmembers"
-                        }}
-                    ]
-                }
-            },
-            {
-                $addFields: {
-                    members: {
-                        $size: "$projectmembers"
-                    }
-                }
-            },
-            {
-                $unwind: "$project"
-            },
-            {
-                $project: {
-                    project: {
-                        _id: 1,
-                        name: 1,
-                        description: 1,
-                        members: 1,
-                        createdAt: 1,
-                        createdBy: 1,
-                    },
-                    role: 1,
-                    _id: 0
 
-                }
-            }
+const createProjectMenbers = asyncHandler(async (req, res) => {
+    const { projectId } = req.params
+    if(!projectId) throw new ApiError(401, "user id is required")
 
-        ]);
+    const { userId } =  req.params 
+    if(!userId) throw new ApiError(401, "user id is required")
 
-        if(!project) throw new ApiError(404, "Project is required!")
-        console.log(project);
-        
+    const user = await User.findById(userId)
+    if(!user) throw new ApiError(401, "user  is required")
 
-        return res.status(200).json(
-            new ApiResponse(
-                200,
-                project,
-                "project fetched successfully"
-            )
+    const { role } = req.body
+    if(!role) throw new ApiError(401, "role  is required")
+
+    if(!Object.values(UserRolesEnum).includes(role)) throw new ApiError(401, "User role is required")
+
+    const projectMenbers = await ProjectMember.create({
+        user: user._id,
+        project: projectId,
+        role: "project_admin"
+    })
+    console.log(projectMenbers);
+    
+    if(!projectMenbers) throw new ApiError(401, "project member  is required")
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            projectMenbers,
+            "project member fetch successfully!"    
         )
-});
-
+    )
+})
 
 const getProjectById = asyncHandler(async (req, res) => {
     const { projectId } = req.params
@@ -119,6 +88,78 @@ const getProjectById = asyncHandler(async (req, res) => {
         )
     )
 
+});
+
+
+
+const getProjects = asyncHandler(async (req, res) => {
+
+    console.log("req.user:", req.user);
+    console.log("req.user._id:", req.user?._id);
+        const project = await ProjectMember.aggregate([
+            {
+                $match: {
+                    user: req.user._id
+                }
+            },
+            {
+                $lookup: {
+                    from: "projects",
+                    localField: "project",
+                    foreignField: "_id",
+                    as: "project",
+                    pipeline: [
+                        { 
+                            $lookup: {
+                                from: "projectmembers",
+                                localField: "_id",
+                                foreignField: "project",
+                                as: "projectmembers"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                members: {
+                                    $size: "$projectmembers"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: "$project"
+            },
+            {
+                $project: {
+                    project: {
+                        _id: 1,
+                        name: 1,
+                        description: 1,
+                        members: 1,
+                        createdAt: 1,
+                        createdBy: 1,
+                    },
+                    role: 1,
+                    _id: 0
+                }
+            }
+
+        ]);
+
+        if(!project) throw new ApiError(404, "Project is required!")
+        console.log(project);
+        
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    project
+                },
+                "project fetched successfully"
+            )
+        )
 });
 
 
@@ -170,16 +211,6 @@ const deleteProject = asyncHandler(async (req, res) => {
 
 });
 
-const createProjectMenbers = asyncHandler(async (req, res) => {
-    const { projectId } = req.params
-
-    await ProjectMember.create({
-        user: req.user._id,
-        project: projectId,
-        role: UserRolesEnum.ADMIN
-    })
-
-})
 
 const addMemberToProject = asyncHandler(async (req, res) => {
     const { email, username, role} = req.body
@@ -359,6 +390,7 @@ const deleteMember = asyncHandler(async (req, res) => {
 export {
     getProjects,
     getProjectById,
+    createProjectMenbers,
     createProject,
     updateProject,
     deleteProject,
