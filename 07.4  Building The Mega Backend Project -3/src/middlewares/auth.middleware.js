@@ -9,20 +9,20 @@ import { ProjectMember } from "../models/projectmember.models.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {   // req, res, === req, _, 
 
-    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-
-// console.log("=== DEBUG JWT MIDDLEWARE ===");
-// console.log("Cookies:", req.cookies);
-// console.log("Auth Header:", req.header("Authorization"));
-// console.log("All headers:", req.headers);
-// console.log("============================");
+    console.log("=== JWT VERIFICATION DEBUG ===");
+    console.log("Cookies:", req.cookies);
+    console.log("Authorization Header:", req.header("Authorization"));
+    console.log("Token extracted:", req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", ""));
+    console.log("==============================");
 
     
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+
       if(!token){
         throw new ApiError(401, "Unauthorized request")
       }
     
-      const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+      const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
     
       if(!decodedToken){
         throw new ApiError(401, "Invalid Access token")
@@ -51,8 +51,8 @@ export const validateProjectPermission = (roles = []) =>
         }
 
         const project = await ProjectMember.findOne({
-            project: mongoose.Types.ObjectId(projectId),
-            user: mongoose.Types.ObjectId(req.user._id),
+            project: new  mongoose.Types.ObjectId(projectId),
+            user: new mongoose.Types.ObjectId(req.user._id),
             
         })
 

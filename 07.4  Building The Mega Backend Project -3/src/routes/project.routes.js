@@ -5,16 +5,28 @@ import {
     getProjects,
     createProjectMenbers,
     updateProject,
-    deleteProject
+    deleteProject,
+    getProjectMembers,
+    addMemberToProject
 } from "../controllers/project.controllers.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { 
+    verifyJWT, 
+    validateProjectPermission 
+} from "../middlewares/auth.middleware.js";
+
 
 const router = Router()
-
+// ==============PROJECT===========
 router.route("/createProj/:userId").post(createProject)
-router.route("/projectMenbers/:userId/:projectId").post(createProjectMenbers)
 router.route("/:projectId").get(getProjectById)
-router.route("/getProject/:projectMemberId/:projectId").get(verifyJWT, getProjects)
+router.route("/getProject/:projectMemberId/:projectId").get(verifyJWT, validateProjectPermission(['admin', 'project_admin']), getProjects)  //pending
 router.route("/updateProject/:projectId").post(updateProject)
-router.route("/deleteProject/:projectId").post(verifyJWT, deleteProject)
+router.route("/deleteProject/:projectId").delete(verifyJWT, deleteProject)   // pending
+
+// =============== MAMBER ===========
+router.route("/projectManabers/:userId/:projectId").post(createProjectMenbers)
+router.route("/getProjectMembers/:projectMemberId").get(getProjectMembers)
+
+
+
 export default router

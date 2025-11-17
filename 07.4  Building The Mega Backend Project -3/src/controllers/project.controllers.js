@@ -99,7 +99,7 @@ const getProjects = asyncHandler(async (req, res) => {
         const project = await ProjectMember.aggregate([
             {
                 $match: {
-                    user: req.user._id
+                    user: new mongoose.Types.ObjectId(req.user._id)
                 }
             },
             {
@@ -146,9 +146,9 @@ const getProjects = asyncHandler(async (req, res) => {
             }
 
         ]);
+        console.log(project);
 
         if(!project) throw new ApiError(404, "Project is required!")
-        console.log(project);
         
 
         return res.status(200).json(
@@ -201,8 +201,9 @@ const updateProject = asyncHandler(async (req, res) => {
 
 const deleteProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params
+    console.log("User ID:+=+=+=>", req.user._id);
 
-    console.log(projectId);
+    console.log("project ID:+=+=+=>",projectId);
     
 
     if(!projectId)  throw new ApiError(404, "Project Id is required")
@@ -210,6 +211,9 @@ const deleteProject = asyncHandler(async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(projectId)) {
         throw new ApiError(400, "Invalid Project ID format");
     }
+
+    const project = await Project.findById(projectId);
+    console.log("Found in Project collection:", project);
 
     // const projectExists = await Project.findById(projectId);
     // console.log("Project exists:", projectExists);
@@ -227,7 +231,7 @@ const deleteProject = asyncHandler(async (req, res) => {
     if(!delProject)  throw new ApiError(404, "project delete not found")
 
     return res.status(200,
-        new ApiResponse(200, "project delete successfully")
+        new ApiResponse(200, {deleteProject}, "project delete successfully")
     )
 
 });
@@ -280,8 +284,10 @@ const addMemberToProject = asyncHandler(async (req, res) => {
 
 
 const getProjectMembers = asyncHandler(async (req, res) => {
-    const projectId = req.params
-    const projectMembers = await ProjectMember.find({projectId}).populate({
+    const { projectMemberId } =  req.params
+    if(!projectMemberId)  throw new ApiError(404, "projectMamabersId Id not found")
+
+    const projectMembers = await ProjectMember.findById(projectMemberId).populate({
         path: "user",
         select: "username fullName avatar"
     }).select("project user role createdAt updateAt -_id")
