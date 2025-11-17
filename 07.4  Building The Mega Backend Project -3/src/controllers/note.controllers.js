@@ -1,14 +1,51 @@
 import mongoose from "mongoose"
+import { User } from "../models/user.models.js"
 import { Project } from "../models/project.models.js"
 import { ApiError } from "../utils/api-error.js"
 import { ApiResponse } from "../utils/api-response.js"
 import { ProjectNote } from "../models/note.models.js"
 import { asyncHandler } from "../utils/async-handler.js"
+import { compare } from "bcryptjs"
  
-const getNotes = async(req, res) => {
+
+const createNote = asyncHandler(async(req, res) => {
+    const { projectId } = req.params 
+    if(!projectId) throw new ApiError(401, "project id is required")
+    
+    const { content } = req.body
+    if(!content) throw new ApiError(401, "content is required")
+    
+    const project = await Project.findById(projectId)
+    if(!project) throw new ApiError(404, "project not found")
+    
+    const { userId } =  req.params 
+    if(!userId) throw new ApiError(401, "user id is required")
+
+    const user = await User.findById(userId)
+    if(!user) throw new ApiError(401, "user is required")
+    
+    const note = await ProjectNote.create({
+        project: projectId,
+        content: content,
+        createdBy: user._id
+    })
+    console.log(note);
+    
+    if(!note) throw new ApiError(401, "note is required")
+    
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            {
+                note
+            }, 
+            "Note created successfully"
+    ))
+});
+const getNotes = asyncHandler(async(req, res) => {
     const { projectId } = req.params
 
-    const project = await Project.findById(projectId)      // Project -> mongoose
+    const project = await Project.findById(projectId)    
 
     if(!project){
         throw new ApiError(404, "project not found")
@@ -27,9 +64,9 @@ const getNotes = async(req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, "Notes fetched successfully" ))
-}
+})
 
-const getNotesById = async(req, res) => {
+const getNotesById = asyncHandler(async(req, res) => {
 
     const { noteId } = req.params
 
@@ -41,30 +78,10 @@ const getNotesById = async(req, res) => {
 
     return res.status(200).json(new ApiResponse(200, note, "Note fectch successfully"))
 
-}
+})
 
-const createNote = async(req, res) => {
-    const { projectId } = req.params
-    const { content } = req.body
 
-    const project = await Project.findById(projectId)
-
-    if(!project){
-        throw new ApiError(404, "project not fount")
-    }
-
-    const note = ProjectNote.create({
-        project: projectId,
-        content,
-        createdBy: req.user._id
-    })
-
-    const populatedNote =await ProjectNote.findById(note._id).populate("createdBy", "username fullname avatar")
-
-    return res.status(200).json(new ApiResponse(200, populatedNote, "Note created successfully"))
-}
-
-const updateNote = async(req, res) => {
+const updateNote = asyncHandler(async(req, res) => {
     const { noteId } = req.params
     const { content } = req.body
 
@@ -82,10 +99,10 @@ const updateNote = async(req, res) => {
 
     return res.status(200).json(new ApiResponse(200, note, "update successfully"))
 
-}
+})
 
 
-const deleteNote = async(req, res) => {
+const deleteNote = asyncHandler(async(req, res) => {
     const { noteId } = req.params
     
     const delNote  = ProjectNote.findByIdAndDelete(noteId)
@@ -97,7 +114,7 @@ const deleteNote = async(req, res) => {
     return res.status(200).json(new ApiResponse(200, delNote, "delete not successfully"))
 
 
-}
+})
 
 export { getNotes, getNotesById, createNote, updateNote, deleteNote }
 
