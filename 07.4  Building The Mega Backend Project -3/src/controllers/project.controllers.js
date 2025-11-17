@@ -393,22 +393,16 @@ const updateMemberRole = asyncHandler(async (req, res) => {
 
 
 const deleteMember = asyncHandler(async (req, res) => {
-    const { projectId, userId } = req.body
+    const { projectMemberId } = req.params
 
-    if( !projectId || !userId){
-        throw new ApiError(404, "project member info is  required")
+    
+
+
+    if(!projectMemberId){
+        throw new ApiError(404, "project id is required")
     }
 
-    const projectmember = await ProjectMember.findOne({
-        project: projectId,
-        user: userId
-    })
-
-    if(!projectmember){
-        throw new ApiError(404, "project member is required")
-    }
-
-    const delProjectMember = await ProjectMember.findByIdAndDelete(projectmember._id)
+    const delProjectMember = await ProjectMember.findByIdAndDelete(projectMemberId)
 
     if(!delProjectMember){
         throw new ApiError(404, "delete Project member is required")
@@ -416,7 +410,9 @@ const deleteMember = asyncHandler(async (req, res) => {
 
     return res.status(201).json(
         new ApiResponse(201,
-            delProjectMember,    
+            {
+                delProjectMember
+            },    
             "delete project member successfully")
     )
 
