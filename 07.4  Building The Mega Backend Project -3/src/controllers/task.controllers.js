@@ -9,6 +9,53 @@ import { asyncHandler } from "../utils/async-handler"
 import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants"
 
 
+
+const createTask = asyncHandler(async(req, res) =>{
+    //1. find project
+    const { title, description, status, assignedTo} = req.body
+
+    if(!title || !description || !status || !assignedTo)  throw new ApiError(404, "user info not found!")
+    const { projectId } = req.params
+
+    const { project } = await Project.findById(projectId)
+    //2. validate project
+    if(!project)  throw new ApiError(404, "task not found!")
+    //3. get the files form req.files
+
+    const files = req.files || []
+
+    if(!files)  throw new ApiError(404, "files not found!")
+    //4. create affachments
+
+    const attachments = files.map((file) => {
+        return {
+            url: `${process.env.BASE_URL}/images/${file.filename}`,
+            mimetype: file.mimetype,
+            size: file.size
+    }
+    })
+
+    if(!attachments) throw new ApiError(404, "files not found!")
+    //5. create task
+
+    const task = await Task.create({
+        title,
+        description,
+        project: project._id,
+        assignedBy: req.user._id,
+        assignedTo: assignedTo? assignedTo : undefined,
+        status,
+        attachments
+    })
+
+    if(!task) throw new ApiError(404, "failed to ceate task")
+    //6. return successfully
+
+    return res.status(201).json(new ApiResponse(201, task, "task create successfully"))
+})
+
+
+
 const getTasks = asyncHandler(async(req, req) =>{
     const { projectId } = req.params
     const proiect = await Project.findById(projectId)
@@ -136,51 +183,6 @@ const getTasksById = asyncHandler(async(req, req) =>{
 
     //4. return successfully 
         return res.satatus(200).json(new ApiResponse(200, task, "task fatched successfully"))
-})
-
-
-const createTask = asyncHandler(async(req, req) =>{
-    //1. find project
-    const { title, description, status, assignedTo} = req.body
-
-    if(!title || !description || !status || !assignedTo)  throw new ApiError(404, "user info not found!")
-    const { projectId } = req.params
-
-    const { project } = await Project.findById(projectId)
-    //2. validate project
-    if(!project)  throw new ApiError(404, "task not found!")
-    //3. get the files form req.files
-
-    const files = req.files || []
-
-    if(!files)  throw new ApiError(404, "files not found!")
-    //4. create affachments
-
-    const attachments = files.map((file) => {
-        return {
-            url: `${process.env.BASE_URL}/images/${file.originalname}`,
-            mimetype: file.mimetype,
-            size: file.size
-    }
-    })
-
-    if(!attachments) throw new ApiError(404, "files not found!")
-    //5. create task
-
-    const task = Task.create({
-        title,
-        description,
-        project: project._id,
-        assignedBy: req.user._id,
-        assignedTo: assignedTo? assignedTo : undefined,
-        status,
-        attachments
-    })
-
-    if(!task) throw new ApiError(404, "task not found!")
-    //6. return successfully
-
-    return res.status(201).json(new ApiResponse(201, task, "task create successfully"))
 })
 
 
