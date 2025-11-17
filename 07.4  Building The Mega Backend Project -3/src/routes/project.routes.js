@@ -16,7 +16,7 @@ import {
 
 
 const router = Router()
-// ==============PROJECT===========
+// ============== PROJECT ===========
 router.route("/createProj/:userId").post(createProject)
 router.route("/:projectId").get(getProjectById)
 router.route("/getProject/:projectMemberId/:projectId").get(verifyJWT, validateProjectPermission(['admin', 'project_admin']), getProjects)  //pending
@@ -26,6 +26,7 @@ router.route("/deleteProject/:projectId").delete(verifyJWT, deleteProject)   // 
 // =============== MAMBER ===========
 router.route("/projectManabers/:userId/:projectId").post(createProjectMenbers)
 router.route("/getProjectMembers/:projectMemberId").get(getProjectMembers)
+router.route("/memberToProject/:projectId").post(verifyJWT, addMemberToProject)
 
 
 
