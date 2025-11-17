@@ -91,15 +91,21 @@ const getNotesById = asyncHandler(async(req, res) => {
 
 const updateNote = asyncHandler(async(req, res) => {
     const { noteId } = req.params
+    console.log(noteId);
+    
     const { content } = req.body
+    console.log(content);
+
 
     const existingNote = ProjectNote.findById(noteId)
+    console.log(existingNote);
+    
 
     if(!existingNote){
         throw new ApiError(404, "exisiting note not found")
     }
 
-    const note = ProjectNote.findByIdAndUpdate(
+    const note = await ProjectNote.findByIdAndUpdate(
         noteId,
         {
             content
