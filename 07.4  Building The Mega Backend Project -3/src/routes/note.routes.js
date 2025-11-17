@@ -6,14 +6,12 @@ import {
 import { validateProjectPermission } from "../middlewares/auth.middleware.js";
 import {
     createNote,
-    updateNote,
-    getNotesById,
-    updateNote,
-    deleteNote
+    getNotes
 } from "../controllers/note.controllers.js"
 
 const router = Router()
 
 router.route("/createNote/:userId/:projectId").post(createNote)
+router.route("/getNotes/:projectId").get(getNotes)
 
 export default router

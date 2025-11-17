@@ -57,13 +57,17 @@ const getNotes = asyncHandler(async(req, res) => {
     }).populate("createdBy", "username fullName avatar")
 
     if(!note){
-        throw new ApiError(404, "project note not found ")
+        throw new ApiError(404, "project note not found")
     }
 
 
     return res
         .status(200)
-        .json(new ApiResponse(200, "Notes fetched successfully" ))
+        .json(new ApiResponse(
+            200,
+            note, 
+            "Notes fetched successfully" 
+        ))
 })
 
 const getNotesById = asyncHandler(async(req, res) => {
