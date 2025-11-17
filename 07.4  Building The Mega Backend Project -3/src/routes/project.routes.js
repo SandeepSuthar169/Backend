@@ -7,7 +7,8 @@ import {
     updateProject,
     deleteProject,
     getProjectMembers,
-    addMemberToProject
+    addMemberToProject,
+    updateProjectMembers
 } from "../controllers/project.controllers.js";
 import { 
     verifyJWT, 
@@ -27,6 +28,7 @@ router.route("/deleteProject/:projectId").delete(verifyJWT, deleteProject)   // 
 router.route("/projectManabers/:userId/:projectId").post(createProjectMenbers)
 router.route("/getProjectMembers/:projectMemberId").get(getProjectMembers)
 router.route("/memberToProject/:projectId").post(verifyJWT, addMemberToProject)
+router.route("/updateProjectMembers/:projectId").post(verifyJWT, updateProjectMembers)
 
 
 

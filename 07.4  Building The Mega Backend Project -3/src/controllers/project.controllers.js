@@ -318,7 +318,7 @@ const updateProjectMembers = asyncHandler(async (req, res) => {
     if(!projectId)  throw new ApiError(404, "Project member is required")
 
     const projectMembers = await ProjectMember.findById(projectId)
-    
+       
     if(!projectMembers)  throw new ApiError(404, "Project member is required")
 
     const { email, username, role } = req.body
@@ -348,6 +348,7 @@ const updateProjectMembers = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
+            updateProjectMember,
             "Project member update successfully"
         )
     )

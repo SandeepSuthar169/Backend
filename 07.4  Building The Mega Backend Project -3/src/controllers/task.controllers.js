@@ -402,9 +402,9 @@ const deleteSubTask = asyncHandler(async(req, req) =>{
 })
 
 export{
+    createTask,
     getTasks,
     getTasksById,
-    createTask,
     updateTask,
     deleteTask,
     getSubTask,
