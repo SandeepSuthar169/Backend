@@ -74,13 +74,17 @@ const getNotesById = asyncHandler(async(req, res) => {
 
     const { noteId } = req.params
 
-    const note = ProjectNote.findById(noteId).populate("createdBy", "username fullname avatar")
+    const note = await ProjectNote.findById(noteId).populate("createdBy", "username fullname avatar")
 
     if(!note){
         throw new ApiError(404, "note not found")
     }
 
-    return res.status(200).json(new ApiResponse(200, note, "Note fectch successfully"))
+    return res.status(200).json(new ApiResponse(
+        200, 
+        note, 
+        "Note fectch successfully"
+    ))
 
 })
 
@@ -97,11 +101,19 @@ const updateNote = asyncHandler(async(req, res) => {
 
     const note = ProjectNote.findByIdAndUpdate(
         noteId,
-        {content},
-        {new: true}
+        {
+            content
+        },
+        {
+            new: true
+        }
     ).populate("createdBy", "username fullname avatar")
 
-    return res.status(200).json(new ApiResponse(200, note, "update successfully"))
+    return res.status(200).json(new ApiResponse(
+        200, 
+        note, 
+        "update successfully"
+    ))
 
 })
 
