@@ -127,16 +127,27 @@ const updateNote = asyncHandler(async(req, res) => {
 const deleteNote = asyncHandler(async(req, res) => {
     const { noteId } = req.params
     
-    const delNote  = ProjectNote.findByIdAndDelete(noteId)
+    const delNote  = await ProjectNote.findByIdAndDelete(noteId)
 
     if(!delNote){
         throw new ApiError(404, "note delete not found")
     }
 
-    return res.status(200).json(new ApiResponse(200, delNote, "delete not successfully"))
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            delNote, 
+            "delete not successfully"
+    ))
 
 
 })
 
-export { getNotes, getNotesById, createNote, updateNote, deleteNote }
+export { 
+    getNotes, 
+    getNotesById, 
+    createNote, 
+    updateNote, 
+    deleteNote 
+}
 
