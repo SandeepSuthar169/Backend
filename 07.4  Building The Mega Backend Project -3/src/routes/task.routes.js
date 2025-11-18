@@ -5,7 +5,9 @@ import {
     getTasksById,
     updateTask,
     createSubTask,
-    getSubTask
+    getSubTask,
+    updateSubTask,
+    deleteSubTask
 } from "../controllers/task.controllers.js";
 // import { verifyJWT } from "../middlewares/auth.middleware.js";
 // import { upload } from "../middlewares/multer.middleware.js"
@@ -14,7 +16,6 @@ const router = Router()
 
 // ================= Task ===================
 router.route("/createTask/:userId/:projectId").post(createTask)
-    // upload.fields('files', 5),
 router.route("/getAllTask/:projectId").get(getAllTasks)
 router.route("/getTasksById/:taskId").get(getTasksById)
 router.route("/updateTask/:taskId").post(updateTask)
@@ -23,5 +24,7 @@ router.route("/updateTask/:taskId").post(updateTask)
 // ================= SubTask ===================
 router.route("/createSubTask/:userId/:taskId").post(createSubTask)
 router.route("/getSubTask/:taskId").get(getSubTask)
+router.route("/updateSubTask/:subTaskId").post(updateSubTask)
+router.route("/deleteSubTask/:subTaskId").delete(deleteSubTask)
 
 export default router

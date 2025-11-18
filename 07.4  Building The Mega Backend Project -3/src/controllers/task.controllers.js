@@ -348,7 +348,6 @@ const getSubTask = asyncHandler(async(req, res) => {
     {
         $unwind: {  
             path: "$createdBy",
-            // preserveNullAndEmptyArrays: true
         }
     },
     {
@@ -389,32 +388,32 @@ const getSubTask = asyncHandler(async(req, res) => {
 
 
 const updateSubTask = asyncHandler(async(req, res) =>{
-    const {title, isCompleted} = req.body
+  
+    const { subTaskId  } =  req.params 
+    if(!subTaskId ) throw new ApiError(401, "user id is required")
 
+    const subTask  = await SubTask.findById(subTaskId )
+    if(!subTask ) throw new ApiError(401, "subTask   is required")
+
+    const {title, isCompleted} = req.body
     if(!title || !isCompleted) throw new ApiError(401, "subTask info is required")
 
-    const { taskId } = req.params
+    if(title) subTask.title = title
+      
+    if(isCompleted !== undefined) subTask.isCompleted = isCompleted
 
-    if(!taskId) throw new ApiError(401, "subTask info is required")
+    await subTask.save({ validateBeforeSave: true })
+    
+    const updateSubTask = await SubTask.findById(subTaskId)
+                .populate("createdBy", "_id username fullname")
+                .populate("task", "_id titke")
 
-    const { task } = await Task.findById(taskId)
 
-    if(!task) throw new ApiError(401, "subTask info is required")
-
-    const subTask = await subTask.findOneAndUpdate(
-      {
-        title,
-        task: new mongoose.Types.ObjectId(taskId),
-        isCompleted,
-        createBy: new mongoose.Types.ObjectId(req.user._id)
-      }
-    )
-
-    if(!subTask) throw new ApiError(401, "subTask not found")
+    if(!updateSubTask) throw new ApiError(401, "updateSubTask not found")
 
     return res.status(200).json(new ApiResponse(
       200,
-      subTask,
+      updateSubTask,
       "subTask update successfully"
     ))
 
@@ -434,6 +433,7 @@ const deleteSubTask = asyncHandler(async(req, res) =>{
 
     return res.status(200).json(new ApiResponse(
       200,
+      delSubTask,
       "subTask delete successfully"
     ))
 
