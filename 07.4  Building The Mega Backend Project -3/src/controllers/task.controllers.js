@@ -333,36 +333,43 @@ const getSubTask = asyncHandler(async(req, res) => {
     //2. subtask aggregation pipeline
     const subtask = SubTask.aggregate([
       {
-        $match: new mongoose.Types.ObjectId(taskId)
-      },
-      {
-        from: "users",
-        localField: "createBy",
-        foreignField: "_id",
-        as: "createBy",
-        project: [
-          {
-            $project: {
-              _id: 1,
-              username: 1,
-              avatar: 1,
-              fullName: 1
-            }
-          }
-        ]
-      },
-      {
-        $addFields: {
-          createBy: {
-            $arrayElemAt: ["$createby", 0]
-          }
+        $match: {
+            task: new mongoose.Types.ObjectId(taskId)  // FIX: Must be an object with field name
         }
-      },
-      {
+    },
+    {
+        $lookup: { 
+            from: "users",
+            localField: "createdBy",  
+            foreignField: "_id",
+            as: "createdBy"
+        }
+    },
+    {
+        $unwind: {  
+            path: "$createdBy",
+            // preserveNullAndEmptyArrays: true
+        }
+    },
+    {
+        $project: {  
+            title: 1,
+            description: 1,
+            status: 1,
+            task: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            "createdBy._id": 1,
+            "createdBy.username": 1,
+            "createdBy.avatar": 1,
+            "createdBy.fullName": 1
+        }
+    },
+    {
         $sort: {
-          createby: -1
+            createdAt: -1  
         }
-      }
+    }
     ])
     
     //3. validate
