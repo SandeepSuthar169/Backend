@@ -1,51 +1,67 @@
 import mongoose from "mongoose"
 import { Task }  from "../models/task.models.js"
 import { User } from "../models/user.models.js"
-import { subTask } from "../models/subtask.modes.js"
+import { SubTask } from "../models/subtask.modes.js"
 import { Project } from "../models/project.models.js"
 import { ApiError } from "../utils/api-error.js"
 import { ApiResponse } from "../utils/api-response.js"
-import { asyncHandler } from "../utils/async-handler"
-import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants"
+import { asyncHandler } from "../utils/async-handler.js"
+import { AvailableTaskStatuses, AvailableUserRoles } from "../utils/constants.js"
 
 
 
 const createTask = asyncHandler(async(req, res) =>{
     //1. find project
-    const { title, description, status, assignedTo} = req.body
+    const { title, description, status, assignedTo } = req.body
+    console.log(title);
+    console.log(description);
+    console.log(status);
+    // console.log(assignedTo );
+    if(!title || !description || !status)  throw new ApiError(404, "user info not found!")
+    
+    
+    const { userId } =  req.params 
+    console.log(userId);
+    
+    if(!userId) throw new ApiError(401, "user id is required")
 
-    if(!title || !description || !status || !assignedTo)  throw new ApiError(404, "user info not found!")
+    const user = await User.findById(userId)
+    if(!user) throw new ApiError(401, "user  is required")
+
+
     const { projectId } = req.params
+    console.log(projectId);
+    
+    if(!projectId) throw new ApiError(401, "projectId  is required")
 
-    const { project } = await Project.findById(projectId)
-    //2. validate project
-    if(!project)  throw new ApiError(404, "task not found!")
+    const  project  = await Project.findById(projectId)
+    if(!project)  throw new ApiError(404, "project not found!")
     //3. get the files form req.files
 
-    const files = req.files || []
+    // const files = req.files || []
 
-    if(!files)  throw new ApiError(404, "files not found!")
-    //4. create affachments
+    // if(!files)  throw new ApiError(404, "files not found!")
+    // //4. create affachments
 
-    const attachments = files.map((file) => {
-        return {
-            url: `${process.env.BASE_URL}/images/${file.filename}`,
-            mimetype: file.mimetype,
-            size: file.size
-    }
-    })
+    // const attachments = files.map((file) => {
+    //     return {
+    //         url: `${process.env.BASE_URL}/images/${file.filename}`,
+    //         mimetype: file.mimetype,
+    //         size: file.size
+    // }
+    // })
 
-    if(!attachments) throw new ApiError(404, "files not found!")
-    //5. create task
+    // if(!attachments) throw new ApiError(404, "files not found!")
+    // //5. create task
 
     const task = await Task.create({
         title,
         description,
-        project: project._id,
-        assignedBy: req.user._id,
-        assignedTo: assignedTo? assignedTo : undefined,
+        project: projectId,
+        assignedBy: user._id,
+        assignedTo: user._id,
         status,
-        attachments
+        // attachments
     })
 
     if(!task) throw new ApiError(404, "failed to ceate task")
@@ -56,48 +72,53 @@ const createTask = asyncHandler(async(req, res) =>{
 
 
 
-const getTasks = asyncHandler(async(req, req) =>{
+const getAllTasks = asyncHandler(async(req, res) =>{
     const { projectId } = req.params
-    const proiect = await Project.findById(projectId)
+    const project = await Project.findById(projectId)
 
-    if(!proiect)  throw new ApiError(401, "project not found")
+    if(!project)  throw new ApiError(401, "project not found")
 
     const task = await Task.aggregate([
-        {
-            $match: projectId
-        },
-        {
-            $lookup: {
-                from: "user",
-                localField: "assignedTo",
-                foreignField: "_id",
-                as: "assignedTo"
-            }
-        },
-        {
-            $unwind: "$assignedTo"
-        },
-        {
-            $project: {
-                title: 1,
-                description: 1,
-                project: 1,
-                assignedTo: 1,
-                assignedBy: 1,
-                satatus: 1,
-                attachemnts: 1,
-
-                "assignedTo._Id": 1,
-                "assignedTo.avatar": 1,
-                "assignedTo.username": 1,
-                "assignedTo.fullName": 1,
+      {
+        $match: {
+            project: new mongoose.Types.ObjectId(projectId)
+        } 
+    },
+    {
+        $lookup: {
+            from: "users",
+            localField: "assignedTo",
+            foreignField: "_id",
+            as: "assignedTo"
+        }
+    },
+    {
+        $unwind: {
+            path: "$assignedTo",
+            preserveNullAndEmptyArrays: true
+        }
+    },
+    {
+        $project: {
+            title: 1,
+            description: 1,
+            project: 1,
+            assignedBy: 1,
+            status: 1,
+            attachments: 1,
+            assignedTo: {
+                _id: 1,
+                avatar: 1,
+                username: 1,
+                fullName: 1
             }
         }
+    }
     ])
 
-    if(!task)  throw new ApiError(404, "Taks not found")
+    if(!task || task.length === 0) throw new ApiError(404, "Tasks not found")
 
-    return res.satatus(200).json(
+    return res.status(200).json(
         new ApiResponse(200,
             task,
             "task fetched successfully"
@@ -106,7 +127,7 @@ const getTasks = asyncHandler(async(req, req) =>{
 })
 
 
-const getTasksById = asyncHandler(async(req, req) =>{
+const getTasksById = asyncHandler(async(req, res) =>{
     //1. find taskId by req.params
     const { taskId } = req.params
     //2. aggregate pipeline task
@@ -186,7 +207,7 @@ const getTasksById = asyncHandler(async(req, req) =>{
 })
 
 
-const updateTask = asyncHandler(async(req, req) =>{
+const updateTask = asyncHandler(async(req, res) =>{
     const { title, description, status, assignedTo} = req.body
 
     if(!title || !description || !status || !assignedTo){
@@ -243,7 +264,7 @@ const updateTask = asyncHandler(async(req, req) =>{
 
 
 
-const deleteTask = asyncHandler(async(req, req) =>{
+const deleteTask = asyncHandler(async(req, res) =>{
     //1. task get by taskId
     const { taskId } = req.params
     if(!taskId) throw new ApiError(401, "taskId not found")
@@ -262,7 +283,7 @@ const deleteTask = asyncHandler(async(req, req) =>{
 })
 
 
-const createSubTask = asyncHandler(async(req, req) =>{
+const createSubTask = asyncHandler(async(req, res) =>{
     //1. get subTask info by req.body
     const { title } = req.body
 
@@ -295,7 +316,7 @@ const createSubTask = asyncHandler(async(req, req) =>{
     ))
 })
 
-const getSubTask = asyncHandler(async(req, req) => {
+const getSubTask = asyncHandler(async(req, res) => {
     //1. find taskId useing req.params
     const { taskId } = req.params
 
@@ -351,7 +372,7 @@ const getSubTask = asyncHandler(async(req, req) => {
 
 
 
-const updateSubTask = asyncHandler(async(req, req) =>{
+const updateSubTask = asyncHandler(async(req, res) =>{
     const {title, isCompleted} = req.body
 
     if(!title || !isCompleted) throw new ApiError(401, "subTask info is required")
@@ -386,7 +407,7 @@ const updateSubTask = asyncHandler(async(req, req) =>{
 
 
 
-const deleteSubTask = asyncHandler(async(req, req) =>{
+const deleteSubTask = asyncHandler(async(req, res) =>{
   const { subTaskId } = req.params
 
   if(!subTaskId) throw new ApiError(401, "subTaskId not found")
@@ -405,7 +426,7 @@ const deleteSubTask = asyncHandler(async(req, req) =>{
 
 export{
     createTask,
-    getTasks,
+    getAllTasks,
     getTasksById,
     updateTask,
     deleteTask,

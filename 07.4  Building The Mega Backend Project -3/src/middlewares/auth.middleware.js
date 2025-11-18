@@ -9,11 +9,11 @@ import { ProjectMember } from "../models/projectmember.models.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {   // req, res, === req, _, 
 
-    console.log("=== JWT VERIFICATION DEBUG ===");
-    console.log("Cookies:", req.cookies);
-    console.log("Authorization Header:", req.header("Authorization"));
-    console.log("Token extracted:", req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", ""));
-    console.log("==============================");
+  //   console.log("=== JWT VERIFICATION DEBUG ===");
+  //   console.log("Cookies:", req.cookies);
+  //   console.log("Authorization Header:", req.header("Authorization"));
+  //   console.log("Token extracted:", req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", ""));
+  //  console.log("==============================");
 
     
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")

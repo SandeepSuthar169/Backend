@@ -10,12 +10,13 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }))
-app.use(express.json())
+app.use(express.json({limit: "50kb"}))
 app.use(cookieParser())
 app.use(express.static("public"))
 app.use(express.urlencoded(
     {
-        extended: true
+        extended: true,
+        limit: "50kb"
     }
 ))
 
