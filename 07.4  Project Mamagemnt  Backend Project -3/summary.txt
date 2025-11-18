@@ -1,0 +1,32 @@
+1. commant ----------------------------------
+npm init -y
+npm i express cors mongoose dotenv express-validator
+npm install --save-dev prettier
+cd src
+mkdir controllers db middlewares models routes utils validators  
+create files in Git Bash : -> touch note.models.js project.models.js projectmember.js subtask.models.js task.models.js user.models.js
+
+npm i mailgen
+npm i nodemailer      
+npm i multer          :->     multer, express-fileupload :-> these helps to file handling and cookies handling.  and  they went to middleware ,{[( express don't have file handling power )]}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Route check. 
+1. http://127.0.0.1:8000/api/v1/healthcheck
