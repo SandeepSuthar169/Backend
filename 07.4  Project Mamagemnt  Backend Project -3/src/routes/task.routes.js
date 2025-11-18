@@ -25,7 +25,7 @@ router.route("/deleteTask/:taskId").delete(deleteTask)
 
 // ================= SubTask ===================
 router.route("/createSubTask/:userId/:taskId").post(createSubTask)
-router.route("/getSubTask/:taskId").get(getSubTask)
+router.route("/createSubTask/:taskId").get(getSubTask)
 router.route("/updateSubTask/:subTaskId").post(updateSubTask)
 router.route("/deleteSubTask/:subTaskId").delete(deleteSubTask)
 
