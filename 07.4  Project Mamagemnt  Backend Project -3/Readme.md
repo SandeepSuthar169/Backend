@@ -28,6 +28,8 @@ note management: projectNote, note content assigning, user cratedBy.
  - CORS: cors
 
 ### Project Schema 
+<img width="1579" height="1272" alt="image" src="https://github.com/user-attachments/assets/4b2ecbe1-941b-404a-8754-161edaaca3c8" />
+
 
 ###  Installation & Setup
 
