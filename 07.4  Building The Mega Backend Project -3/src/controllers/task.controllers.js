@@ -174,7 +174,6 @@ const getTasksById = asyncHandler(async(req, res) =>{
                             _id: 1,
                             username: 1,
                             fullName: 1,
-                            avatar: 1,
                           },
                         },
                       ],
@@ -215,17 +214,16 @@ const getTasksById = asyncHandler(async(req, res) =>{
 const updateTask = asyncHandler(async(req, res) =>{
     const { title, description, status, assignedTo} = req.body
 
-    if(!title || !description || !status || !assignedTo){
+    if(!title || !description || !status){
         throw new ApiError(404, "user info not found!")
     }
-    const { projectId, taskId} = req.params
+    const {taskId} = req.params
 
-    const { project } = await Project.findById(projectId)
     
-    const { task } = await Project.findById(taskId)
+    const  task  = await Task.findById(taskId)
 
 
-    if(!project || !taskId) throw new ApiError(404, "task not found!")
+    if(!taskId) throw new ApiError(404, "task not found!")
 
 
     // const files = req.files || []
@@ -241,7 +239,7 @@ const updateTask = asyncHandler(async(req, res) =>{
     //     }
     // })
 
-    if(!attachments)  throw new ApiError(404, "files not found!")
+    // if(!attachments)  throw new ApiError(404, "files not found!")
 
     if(title)  task.title = title
     
@@ -257,14 +255,16 @@ const updateTask = asyncHandler(async(req, res) =>{
 
     await task.save({validateBeforeSave: true})
 
-    const updateTask = await Task.findByIdAndUpdate(task._id)
+    const updateTask = await Task.findById(task._id)
         .populate("assignedTo", "username fullName")
         .populate("assignedBy",  "fullName username")
 
-    if(!updateTask)  throw new ApiError(401, "updateTask not found")
 
-    return res.status(200).json(200, updateTask, "update task successfully")
-
+    return res.status(200).json(new ApiResponse(
+      200,
+      updateTask,
+      "update task successfully"
+    ))
 })
 
 
@@ -291,25 +291,29 @@ const deleteTask = asyncHandler(async(req, res) =>{
 const createSubTask = asyncHandler(async(req, res) =>{
     //1. get subTask info by req.body
     const { title } = req.body
-
     if(!title) throw new ApiError(404, "title is required")
+    
+      
+    const { userId } =  req.params 
+    if(!userId) throw new ApiError(401, "user id is required")
+      
+    const user = await User.findById(userId)
+    if(!user) throw new ApiError(401, "user  is required")
+      
     const { taskId } = req.params
-
     if(!taskId) throw new ApiError(404, "title is required")
     //2. find task by taskId
 
     const task = await Task.findById(taskId)
-
     if(!task)  throw new ApiError(404, "title is required")
 
     //3. crate subTask
 
-    const subTask = await subTask.create({
+    const subTask = await SubTask.create({
         title,
-        task: new mongoose.Types.ObjectId(task._id),
-        createdBy: new mongoose.Types.ObjectId(req.user._id)
+        task: new mongoose.Types.ObjectId(taskId),
+        createdBy: new mongoose.Types.ObjectId(user._id)
     })
-    
     //4. validate fileds
     if(!subTask) throw new ApiError(403, "subTask not create")
     //5. return success
@@ -327,7 +331,7 @@ const getSubTask = asyncHandler(async(req, res) => {
 
     if(!taskId) throw new ApiError(401, "taskId not found")
     //2. subtask aggregation pipeline
-    const subtask = subTask.aggregate([
+    const subtask = SubTask.aggregate([
       {
         $match: new mongoose.Types.ObjectId(taskId)
       },
@@ -368,7 +372,7 @@ const getSubTask = asyncHandler(async(req, res) => {
     return res.status(200).json(
       new ApiResponse(
         200,
-        subTask,
+        subtask,
         "subTask fetch successfully"
 
       )
@@ -417,7 +421,7 @@ const deleteSubTask = asyncHandler(async(req, res) =>{
 
   if(!subTaskId) throw new ApiError(401, "subTaskId not found")
 
-  const delSubTask = await subTask.findByIdAndDelete(subTaskId)
+  const delSubTask = await SubTask.findByIdAndDelete(subTaskId)
 
   if(!delSubTask) throw new ApiError(401, "subTaskId not found")
 
