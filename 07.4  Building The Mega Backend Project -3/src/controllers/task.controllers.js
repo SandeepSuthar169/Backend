@@ -203,7 +203,12 @@ const getTasksById = asyncHandler(async(req, res) =>{
         if(!task)  throw new ApiError(404, "task not found!")
 
     //4. return successfully 
-        return res.satatus(200).json(new ApiResponse(200, task, "task fatched successfully"))
+        return res.status(200).json(
+            new ApiResponse(
+                200, 
+                task, 
+                "task fatched successfully"
+          ))
 })
 
 
@@ -223,18 +228,18 @@ const updateTask = asyncHandler(async(req, res) =>{
     if(!project || !taskId) throw new ApiError(404, "task not found!")
 
 
-    const files = req.files || []
+    // const files = req.files || []
 
-    if(!files)  throw new ApiError(404, "files not found!")
-    //4. create affachments
+    // if(!files)  throw new ApiError(404, "files not found!")
+    // //4. create affachments
 
-    const attachments = files.map((file) => {
-        return {
-            url: `${process.env.BASE_URL}/images/${file.originalname}`,
-            mimetype: file.mimetype,
-            size: file.size
-        }
-    })
+    // const attachments = files.map((file) => {
+    //     return {
+    //         url: `${process.env.BASE_URL}/images/${file.originalname}`,
+    //         mimetype: file.mimetype,
+    //         size: file.size
+    //     }
+    // })
 
     if(!attachments)  throw new ApiError(404, "files not found!")
 
@@ -248,13 +253,13 @@ const updateTask = asyncHandler(async(req, res) =>{
     
     if(assignedTo)  task.assignedTo = assignedTo
     
-    if(attachments.length > 0)  task.attachments.push(...attachments)
+    // if(attachments.length > 0)  task.attachments.push(...attachments)
 
     await task.save({validateBeforeSave: true})
 
-    const updateTask = await Task.findById(task._id)
-        .populate("assignedTo", "avatar username fullName")
-        .populate("assignedBy", "avatar fullName username")
+    const updateTask = await Task.findByIdAndUpdate(task._id)
+        .populate("assignedTo", "username fullName")
+        .populate("assignedBy",  "fullName username")
 
     if(!updateTask)  throw new ApiError(401, "updateTask not found")
 
