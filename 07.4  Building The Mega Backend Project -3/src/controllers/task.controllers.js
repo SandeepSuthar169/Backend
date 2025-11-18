@@ -275,16 +275,18 @@ const deleteTask = asyncHandler(async(req, res) =>{
     if(!taskId) throw new ApiError(401, "taskId not found")
     //2. validate task
 
-
     //3. delete task by taskId
-
     const deleTask = await Task.findOneAndDelete(taskId)
     
     //4. validate delete task
     if(!deleTask) throw new ApiError(401, "delete task not success")
     //5. return success
 
-    return res.status(200).json(new ApiResponse(200, deleTask, "delete task successfully"))
+    return res.status(200).json(new ApiResponse(
+      200, 
+      deleTask, 
+      "delete task successfully"
+    ))
 })
 
 

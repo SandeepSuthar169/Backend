@@ -7,7 +7,8 @@ import {
     createSubTask,
     getSubTask,
     updateSubTask,
-    deleteSubTask
+    deleteSubTask,
+    deleteTask
 } from "../controllers/task.controllers.js";
 // import { verifyJWT } from "../middlewares/auth.middleware.js";
 // import { upload } from "../middlewares/multer.middleware.js"
@@ -19,6 +20,7 @@ router.route("/createTask/:userId/:projectId").post(createTask)
 router.route("/getAllTask/:projectId").get(getAllTasks)
 router.route("/getTasksById/:taskId").get(getTasksById)
 router.route("/updateTask/:taskId").post(updateTask)
+router.route("/deleteTask/:taskId").delete(deleteTask)
 
 
 // ================= SubTask ===================
