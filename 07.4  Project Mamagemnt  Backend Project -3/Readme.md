@@ -11,7 +11,7 @@ This is Project Management System backend that provides  for managing projects, 
 - Project Management: Full CRUD (Create, Read, Update, Delete) operations for task and subTask. 
 - Task Management: Task creation, assignment, status tracking
 
-note management: projectNote, note content assigning, user cratedBy.  
+- note management: projectNote, note content assigning, user cratedBy.  
 ## Tech Stack
 - Runtime: Node.js
 
