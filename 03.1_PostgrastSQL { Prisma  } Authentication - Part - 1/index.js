@@ -3,7 +3,7 @@ import dotent from "dotenv"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 // constom route
-import userRouter from "./routes/auth.route.js"
+// import userRouter from "./routes/auth.route.js"
 
 
 dotent.config()
@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 })
 
 
-app.use('/api/v1/users', userRouter)
+// app.use('/api/v1/users', userRouter)
 
 
 app.listen(process.env.PORT, () => {

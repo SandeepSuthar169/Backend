@@ -1,4 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+
+// import pkg from '@prisma/client';
+
+// To:
+import pkg from '../generated/prisma/index.js';
+
+const { PrismaClient } = pkg;
+
 import bcrypt from "bcryptjs";
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
@@ -18,7 +26,7 @@ export const registerUser = async (req, res) => {
         })
     }
 //-----------------------------------------------------------------------
-    try {
+    // try {
         const  existingUser = await prisma.user.findUnique({
             where: {email}
         })
@@ -79,13 +87,13 @@ export const registerUser = async (req, res) => {
         });
 
 
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            error,
-            message: "Registration failed",
-        });
-    }
+    // } catch (error) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         error,
+    //         message: "Registration failed",
+    //     });
+    // }
    
 
 };

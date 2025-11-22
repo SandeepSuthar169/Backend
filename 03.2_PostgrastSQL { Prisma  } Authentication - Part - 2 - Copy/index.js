@@ -4,8 +4,6 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 // constom route
 import userRouter from "./routes/auth.route.js"
-import cookieParser from "cookie-parser"
-
 
 dotent.config()
 const port = process.env.PORT || 4000
@@ -21,7 +19,7 @@ app.use(cors({
 }))
 app.use(express .json())
 app.use(express.urlencoded({extended:true}))
-app.use(express.cookieParser())
+// app.use(express.cookieParser())
 
 app.get("/", (req, res) => {
     res.status(200).json({
