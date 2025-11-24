@@ -3,13 +3,34 @@ import axios from "axios"
 import Redis from "ioredis"
 import http from "http"
 import { Server } from "socket.io";
+import { Socket } from "dgram";
 
 
 const app = express()
 
-const httpServer = http.createServer(app)   // HTTP Server
+const httpServer = http.createServer(app)   // HTTP Server (Express Server ki mount Kardiya http pe)
 
-const io = new Server()
+const io = new Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ['GET', 'POST']
+    }
+})  // Scoket server
+// io.attach(httpServer);
+
+
+io.on('connection',(socket) => {
+    console.log("Socket Connected", socket.id );
+    setInterval(() => {
+        Socket.emit("hello")   
+    }, 2000)
+})
+
+
+
+
+
+
 
 const PORT = process.env.PORT ?? 8000
 
@@ -25,6 +46,10 @@ app.get("/", (req, res) => {
     return res.json({stauts : "success"});
 })
 
+app.use(express.static('./public'))
+
+
+// middleware 
 app.use(async function (req, res, next){
     const key = `rat-limit`;                // const key = `rat-limit${UserId}`;
     const value = await redis.get(key)

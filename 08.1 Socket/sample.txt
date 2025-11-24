@@ -1,2 +1,2 @@
-docker compose up -d
+docker compose up -d    // docker engine start before write in terminal {docker compose up -d}
 npm run dev
