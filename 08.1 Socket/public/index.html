@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,20 +7,369 @@
 </head>
 <body>
     <div>
-        <div class="message">
-            <ul>
-
-            </ul>
-        </div>
-        <div>
-            <ul>
-                
-            </ul>
-        </div>
+        <input type="text", placeholder="Type your input", id="message-input">
+        <button id="send_bt">Send</button>
     </div>
+    <div class="messages">
+        <ul id="message-container">
+            <li>hello</li>
+        </ul>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io("http://localhost:8000");
-      </script>
+        const socket = io(); // Connect to backend
+
+        const messageContainer = document.getElementById('message-container')
+
+
+        socket.on('server-message', msg => {
+            const li = document.createElement('li')
+            li.innerText = msg
+            messageContainer.appendChild(li)
+        })
+
+        const messageInput = document.getElementById('message-input')
+        const sendButton = document.getElementById('send_bt')
+
+        sendButton.addEventListener('click', () => {
+            const msg = messageInput.value;
+            socket.emit('message', msg)
+
+        })
+    </script>
+
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .status {
+            text-align: center;
+            padding: 8px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .add-todo {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        #todo-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #todo-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #add-btn {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #add-btn:hover {
+            background: #5568d3;
+        }
+
+        #add-btn:active {
+            transform: scale(0.98);
+        }
+
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .todo-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .todo-text {
+            flex: 1;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Real-time Todo</h1>
+        <div class="status" id="status">Connecting...</div>
+        
+        <div class="add-todo">
+            <input type="text" id="todo-input" placeholder="What needs to be done?" />
+            <button id="add-btn">Add</button>
+        </div>
+
+        <ul class="todo-list" id="todo-list">
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>No todos yet. Add one above!</p>
+            </div>
+        </ul>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:8000');
+        const todoInput = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+        const statusDiv = document.getElementById('status');
+
+        // Connection status
+        socket.on('connect', () => {
+            statusDiv.textContent = '🟢 Connected - ' + socket.id;
+            statusDiv.className = 'status connected';
+        });
+
+        socket.on('disconnect', () => {
+            statusDiv.textContent = '🔴 Disconnected';
+            statusDiv.className = 'status disconnected';
+        });
+
+        // Load initial todos
+        socket.on('load-todos', (todos) => {
+            renderTodos(todos);
+        });
+
+        // Todo added
+        socket.on('todo-added', (todo) => {
+            addTodoToList(todo);
+        });
+
+        // Todo toggled
+        socket.on('todo-toggled', (data) => {
+            const todoItem = document.querySelector(`[data-id="${data.id}"]`);
+            if (todoItem) {
+                if (data.completed) {
+                    todoItem.classList.add('completed');
+                } else {
+                    todoItem.classList.remove('completed');
+                }
+                const checkbox = todoItem.querySelector('.todo-checkbox');
+                checkbox.checked = data.completed;
+            }
+        });
+
+        // Todo deleted
+        socket.on('todo-deleted', (data) => {
+            const todoItem = document.querySelector(`[data-id="${data.id}"]`);
+            if (todoItem) {
+                todoItem.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => todoItem.remove(), 300);
+                checkEmptyState();
+            }
+        });
+
+        // Add todo
+        addBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                socket.emit('add-todo', { text });
+                todoInput.value = '';
+            }
+        }
+
+        function renderTodos(todos) {
+            todoList.innerHTML = '';
+            if (todos.length === 0) {
+                showEmptyState();
+            } else {
+                todos.forEach(todo => addTodoToList(todo));
+            }
+        }
+
+        function addTodoToList(todo) {
+            const emptyState = todoList.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const li = document.createElement('li');
+            li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+            li.dataset.id = todo.id;
+            
+            li.innerHTML = `
+                <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} />
+                <span class="todo-text">${escapeHtml(todo.text)}</span>
+                <button class="delete-btn">Delete</button>
+            `;
+
+            const checkbox = li.querySelector('.todo-checkbox');
+            checkbox.addEventListener('change', () => {
+                socket.emit('toggle-todo', { id: todo.id });
+            });
+
+            const deleteBtn = li.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => {
+                socket.emit('delete-todo', { id: todo.id });
+            });
+
+            todoList.appendChild(li);
+        }
+
+        function checkEmptyState() {
+            if (todoList.children.length === 0) {
+                showEmptyState();
+            }
+        }
+
+        function showEmptyState() {
+            todoList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>No todos yet. Add one above!</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Animation for slide out
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
