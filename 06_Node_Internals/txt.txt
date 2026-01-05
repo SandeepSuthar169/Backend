@@ -1,0 +1,30 @@
+1. node process
+
+    { Main Tread }
+
+    - Project (code file) init
+    - Top level code run 
+    - Require module 
+    - Event Callbacks Register in ----> Event Loop
+    
+    - Start Event Loop  
+                    |
+                    |
+                    |___________
+                    |           |
+                    |        { Tread Pool }
+                    |     Ex ->  they have Tread  <---  CPU intensive task -> Fs, Calculation, Crypto
+                    |            ( Use Tread )
+                    |
+                    |
+                    |
+                    |___________
+                                |
+                                |
+            -------------->- Expired Timer Callbacks ( setTimeout, setInterval )
+            |            - IO Pooling ( Fs moduls )
+            |    repit   - setImmediate Callbacks      -+-+-+-> - this is not a determone or not a predic.  - it is bound by the performace of the process.
+            |            - Close Callbacks ()
+            |<----------- - Yes Pending ? No - Exisy
+
+
